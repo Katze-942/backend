@@ -94,7 +94,7 @@ export const configSchema = z
             .default('1'),
         SHORT_UUID_LENGTH: z
             .string()
-            .default('16')
+            .default('64')
             .transform((val) => parseInt(val, 10))
             .refine((val) => val >= 16 && val <= 64, 'SHORT_UUID_LENGTH must be between 16 and 64'),
         IS_HTTP_LOGGING_ENABLED: z
