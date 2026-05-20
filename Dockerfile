@@ -7,6 +7,7 @@ ARG FRONTEND_URL=https://github.com/remnawave/frontend/releases/latest/download/
 RUN apk add --no-cache curl unzip ca-certificates \
     && curl -L ${FRONTEND_URL} -o frontend.zip \
     && unzip frontend.zip -d frontend_temp \
+    && sed -i 's/\.max(40,{message:"Remark must be less than 40 characters"})//g' frontend_temp/dist/assets/*.js \
     && curl -L https://validator.remna.dev/wasm_exec.js -o frontend_temp/dist/assets/wasm_exec.js \
     && curl -L https://validator.remna.dev/xray.schema.json -o frontend_temp/dist/assets/xray.schema.json \
     && curl -L https://validator.remna.dev/xray.schema.cn.json -o frontend_temp/dist/assets/xray.schema.cn.json \
