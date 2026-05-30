@@ -13,6 +13,8 @@ permissions:
 
 env:
   IMAGE_NAME: ghcr.io/katze-942/backend
+  FRONTEND_REPOSITORY: Katze-942/frontend
+  FRONTEND_RELEASE_TAG: dev-build
 
 jobs:
   build-docker-image:
@@ -37,9 +39,20 @@ jobs:
       - name: Prepare build metadata
         id: meta
         run: |
+          FRONTEND_URL="https://github.com/${FRONTEND_REPOSITORY}/releases/download/${FRONTEND_RELEASE_TAG}/remnawave-frontend.zip"
+          FRONTEND_COMMIT="$(curl -fsSL "https://api.github.com/repos/${FRONTEND_REPOSITORY}/releases/tags/${FRONTEND_RELEASE_TAG}" | jq -r '.target_commitish')"
+          if [ -z "$FRONTEND_COMMIT" ] || [ "$FRONTEND_COMMIT" = "null" ]; then
+            echo "Cannot resolve frontend release ${FRONTEND_REPOSITORY}@${FRONTEND_RELEASE_TAG}" >&2
+            exit 1
+          fi
+
           echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
           echo "build_time=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
-          echo "frontend_commit=$(curl -s https://api.github.com/repos/remnawave/frontend/commits/main | jq -r '.sha')" >> "$GITHUB_OUTPUT"
+          echo "frontend_url=$FRONTEND_URL" >> "$GITHUB_OUTPUT"
+          echo "frontend_commit=$FRONTEND_COMMIT" >> "$GITHUB_OUTPUT"
+
+      - name: Check frontend release asset
+        run: curl -fIsSL "${{ steps.meta.outputs.frontend_url }}" >/dev/null
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -53,6 +66,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:main
             ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
           build-args: |
+            FRONTEND_URL=${{ steps.meta.outputs.frontend_url }}
             BRANCH=main
             __RW_METADATA_VERSION=${{ steps.meta.outputs.version }}
             __RW_METADATA_GIT_BRANCH=${{ github.ref_name }}
