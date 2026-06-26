@@ -94,7 +94,8 @@ const PROTOCOL_BUILDERS: ProtocolBuilderMap = {
 const TRANSPORT_BUILDERS: TransportBuilderMap = {
     ws: (host) => ({
         path: host.transportOptions.path,
-        headers: { Host: host.transportOptions.host, ...host.transportOptions.headers },
+        host: host.transportOptions.host,
+        headers: { ...host.transportOptions.headers },
         ...(host.transportOptions.heartbeatPeriod != null && {
             heartbeatPeriod: host.transportOptions.heartbeatPeriod,
         }),
@@ -102,7 +103,7 @@ const TRANSPORT_BUILDERS: TransportBuilderMap = {
     httpupgrade: (host) => ({
         path: host.transportOptions.path,
         host: host.transportOptions.host,
-        headers: { Host: host.transportOptions.host, ...host.transportOptions.headers },
+        headers: { ...host.transportOptions.headers },
     }),
     tcp: buildTcpSettings,
     xhttp: (host) => ({
@@ -151,6 +152,14 @@ function buildTlsSettings(host: ResolvedProxyConfig): Record<string, unknown> {
 
     if (host.securityOptions.allowInsecure) {
         settings.allowInsecure = true;
+    }
+
+    if (host.securityOptions.echForceQuery) {
+        settings.echForceQuery = host.securityOptions.echForceQuery;
+    }
+
+    if (host.securityOptions.echConfigList) {
+        settings.echConfigList = host.securityOptions.echConfigList;
     }
 
     return settings;
@@ -220,7 +229,7 @@ export class XrayJsonGeneratorService {
 
                 configs.push({
                     ...baseTemplate,
-                    outbounds: [...outboundConfig.outbounds, ...baseTemplate.outbounds],
+                    outbounds: [...outboundConfig.outbounds, ...(baseTemplate.outbounds ?? [])],
                     remarks: outboundConfig.remarks,
                     meta: outboundConfig.meta,
                 });
@@ -376,16 +385,21 @@ export class XrayJsonGeneratorService {
         allHosts: ResolvedProxyConfig[],
     ): ResolvedProxyConfig[] {
         const source = selectFrom ?? 'HIDDEN';
+        const recipientUuid = host.metadata.uuid;
         let candidates: ResolvedProxyConfig[] = [];
         switch (source) {
             case 'ALL':
-                candidates = allHosts;
+                candidates = allHosts.filter((h) => h.metadata.uuid !== recipientUuid);
                 break;
             case 'HIDDEN':
-                candidates = allHosts.filter((h) => h.metadata.isHidden);
+                candidates = allHosts.filter(
+                    (h) => h.metadata.isHidden && h.metadata.uuid !== recipientUuid,
+                );
                 break;
             case 'NOT_HIDDEN':
-                candidates = allHosts.filter((h) => !h.metadata.isHidden);
+                candidates = allHosts.filter(
+                    (h) => !h.metadata.isHidden && h.metadata.uuid !== recipientUuid,
+                );
                 break;
         }
 

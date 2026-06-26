@@ -57,10 +57,10 @@ interface IResolveProxyConfigOptions {
     };
 }
 
-type RemnawaveKcpConfig = Omit<KCPConfig, 'clientMtu'> & {
+type RemnawaveKcpConfig = {
     clientMtu?: number;
     clientTti?: number;
-};
+} & Omit<KCPConfig, 'clientMtu'>;
 
 @Injectable()
 export class ResolveProxyConfigService {
