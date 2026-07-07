@@ -59,6 +59,11 @@ export interface IResolveProxyConfigOptions {
     excludeHostsByTags?: ISRRContext['excludeHostsByTags'];
 }
 
+type RemnawaveKcpConfig = {
+    clientMtu?: number;
+    clientTti?: number;
+} & Omit<KCPConfig, 'clientMtu'>;
+
 @Injectable()
 export class ResolveProxyConfigService {
     private readonly nanoid: ReturnType<typeof customAlphabet>;
@@ -334,7 +339,7 @@ export class ResolveProxyConfigService {
         };
     }
 
-    private resolveKcp(settings: KCPConfig | undefined): KcpTransport {
+    private resolveKcp(settings: RemnawaveKcpConfig | undefined): KcpTransport {
         return {
             transport: 'kcp',
             transportOptions: {
