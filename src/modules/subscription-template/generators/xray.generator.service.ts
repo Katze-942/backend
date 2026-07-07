@@ -167,6 +167,8 @@ export class XrayGeneratorService {
             }
             if (host.securityOptions.pinnedPeerCertSha256) {
                 params.pinSHA256 = host.securityOptions.pinnedPeerCertSha256;
+                params.tls_certificate_public_key_sha256 =
+                    host.securityOptions.pinnedPeerCertSha256;
             }
         }
 
