@@ -1,7 +1,8 @@
 name: Deploy backend contracts
 on:
   push:
-    branches: ['**']
+    branches-ignore:
+      - my-fork
     paths:
       - 'libs/contract/package.json'
       - '.github/workflows/deploy-lib.yml'
