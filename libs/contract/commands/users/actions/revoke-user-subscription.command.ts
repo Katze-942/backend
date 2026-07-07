@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
-import { ExtendedUsersSchema } from '../../../models';
 import { REST_API, USERS_ROUTES } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
+import { UserResponseSchema } from '../user.response';
 
 export namespace RevokeUserSubscriptionCommand {
     export const url = REST_API.USERS.ACTIONS.REVOKE_SUBSCRIPTION;
@@ -12,13 +12,12 @@ export namespace RevokeUserSubscriptionCommand {
         USERS_ROUTES.ACTIONS.REVOKE_SUBSCRIPTION(':uuid'),
         'post',
         'Revoke user subscription',
+        { scope: 'revoke-subscription', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
-        uuid: z.string().uuid(),
+    export const RequestParamSchema = z.object({
+        uuid: z.uuid(),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const RequestBodySchema = z.preprocess(
         (val) => val || {},
@@ -31,7 +30,6 @@ export namespace RevokeUserSubscriptionCommand {
                         'Optional. If true, only passwords will be revoked, without changing the short UUID (Subscription URL).',
                     ),
             ),
-
             shortUuid: z.optional(
                 z
                     .string()
@@ -44,11 +42,9 @@ export namespace RevokeUserSubscriptionCommand {
         }),
     );
 
+    export const ResponseSchema = UserResponseSchema;
+
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
     export type RequestBody = z.infer<typeof RequestBodySchema>;
-
-    export const ResponseSchema = z.object({
-        response: ExtendedUsersSchema,
-    });
-
     export type Response = z.infer<typeof ResponseSchema>;
 }

@@ -1,4 +1,4 @@
-import isEmail from 'validator/lib/isEmail';
+import z from 'zod';
 
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -6,9 +6,9 @@ import { RawCacheService } from '@common/raw-cache';
 import { fail, ok, TResult } from '@common/types';
 import { CACHE_KEYS, ERRORS } from '@libs/contracts/constants';
 
-import { RemnawaveSettingsRepository } from './repositories/remnawave-settings.repository';
-import { UpdateRemnawaveSettingsRequestDto } from './dto';
+import { UpdateRemnawaveSettingsBodyDto } from './dto';
 import { RemnawaveSettingsEntity } from './entities';
+import { RemnawaveSettingsRepository } from './repositories/remnawave-settings.repository';
 
 @Injectable()
 export class RemnawaveSettingsService {
@@ -30,7 +30,7 @@ export class RemnawaveSettingsService {
     }
 
     public async updateSettingsFromController(
-        body: UpdateRemnawaveSettingsRequestDto,
+        body: UpdateRemnawaveSettingsBodyDto,
     ): Promise<TResult<RemnawaveSettingsEntity>> {
         try {
             const settings = await this.remnawaveSettingsRepository.getSettings();
@@ -158,7 +158,8 @@ export class RemnawaveSettingsService {
             for (const provider of oauth2Providers) {
                 if (provider.enabled && provider.allowedEmails.length > 0) {
                     for (const email of provider.allowedEmails) {
-                        if (!isEmail(email)) {
+                        const emailSchema = z.email().safeParse(email);
+                        if (!emailSchema.success) {
                             return {
                                 valid: false,
                                 error: `[OAuth2] Email ${email} is not a valid email address.`,
@@ -179,7 +180,8 @@ export class RemnawaveSettingsService {
             for (const provider of genericOAuth2Providers) {
                 if (provider.enabled && provider.allowedEmails.length > 0) {
                     for (const email of provider.allowedEmails) {
-                        if (!isEmail(email)) {
+                        const emailSchema = z.email().safeParse(email);
+                        if (!emailSchema.success) {
                             return {
                                 valid: false,
                                 error: `[OAuth2] Email ${email} is not a valid email address.`,

@@ -1,4 +1,4 @@
-export * from './get-all-subscriptions.dto';
+export * from './get-subscriptions.dto';
 export * from './get-connection-keys-by-uuid.dto';
 export * from './get-raw-subscription-by-short-uuid.dto';
 export * from './get-subscription-by-client-type.dto';

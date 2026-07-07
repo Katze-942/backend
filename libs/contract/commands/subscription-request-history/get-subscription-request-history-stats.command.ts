@@ -11,6 +11,7 @@ export namespace GetSubscriptionRequestHistoryStatsCommand {
         SUBSCRIPTION_REQUEST_HISTORY_ROUTES.STATS,
         'get',
         'Get subscription request history stats',
+        { scope: 'stats', kind: 'read' },
     );
 
     export const ResponseSchema = z.object({
@@ -23,10 +24,7 @@ export namespace GetSubscriptionRequestHistoryStatsCommand {
             ),
             hourlyRequestStats: z.array(
                 z.object({
-                    dateTime: z
-                        .string()
-                        .datetime()
-                        .transform((str) => new Date(str)),
+                    dateTime: z.iso.datetime().transform((str) => new Date(str)),
                     requestCount: z.number(),
                 }),
             ),

@@ -1,3 +1,5 @@
+import { hasher } from 'node-object-hash';
+import { readFileSync } from 'node:fs';
 import {
     BalancingRule,
     InboundConfig,
@@ -9,8 +11,6 @@ import {
     VLessInboundConfig,
     XrayConfig,
 } from 'xray-typed';
-import { hasher } from 'node-object-hash';
-import { readFileSync } from 'node:fs';
 
 import { HashedSet } from '@remnawave/hashed-set';
 
@@ -18,7 +18,12 @@ import { getVlessFlow } from '@common/utils/flow/get-vless-flow';
 
 import { UserForConfigEntity } from '@modules/users/entities/users-for-config';
 
-import { getSsPassword, isSS2022MethodFromMethod, SHADOWSOCKS_METHODS } from './ss-cipher';
+import {
+    getDecodedKeySize,
+    getSsPassword,
+    isSS2022MethodFromMethod,
+    SHADOWSOCKS_METHODS,
+} from './ss-cipher';
 
 const MANAGED_CLIENT_PROTOCOLS = new Set(['hysteria', 'shadowsocks', 'trojan', 'vless']);
 type ManagedInboundSettings = VLessInboundConfig | TrojanInboundConfig | ShadowsocksInboundConfig;
@@ -446,10 +451,11 @@ export class XRayConfig {
                         '(inbound → settings → password – generate with: openssl rand -base64 32)',
                 );
             }
-            if (settings.password.length < 32) {
+            // https://xtls.github.io/config/inbounds/shadowsocks.html#inboundconfigurationobject
+            if (getDecodedKeySize(settings.password) !== 32) {
                 throw new Error(
-                    'Shadowsocks password must be at least 32 characters long for 2022-blake3-* methods. ' +
-                        '(inbound → settings → password – generate with: openssl rand -base64 32)',
+                    `Shadowsocks password for "${method}" must be a base64 string that decodes to exactly 32 bytes. ` +
+                        `(inbound → settings → password – generate with: openssl rand -base64 32)`,
                 );
             }
         }

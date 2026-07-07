@@ -1,0 +1,17 @@
+{
+    "$schema": "https://swc.rs/schema.json",
+    "sourceMaps": false,
+    "jsc": {
+        "target": "esnext",
+        "transform": {
+            "useDefineForClassFields": true
+        },
+        "parser": {
+            "syntax": "typescript",
+            "decorators": true,
+            "dynamicImport": true
+        },
+        "baseUrl": "./"
+    },
+    "minify": false
+}

@@ -5,9 +5,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants/errors';
 
-import { SnippetsRepository } from './repositories/snippets.repository';
-import { GetSnippetsResponseModel } from './models';
 import { SnippetEntity } from './entities';
+import { GetSnippetsResponseModel } from './models';
+import { SnippetsRepository } from './repositories/snippets.repository';
 
 @Injectable()
 export class SnippetsService {
@@ -26,7 +26,7 @@ export class SnippetsService {
         }
     }
 
-    public async deleteSnippetByName(name: string): Promise<TResult<GetSnippetsResponseModel>> {
+    public async deleteSnippetByName(name: string): Promise<TResult<boolean>> {
         try {
             const snippet = await this.snippetsRepository.findByName(name);
 
@@ -36,7 +36,7 @@ export class SnippetsService {
 
             await this.snippetsRepository.deleteByName(name);
 
-            return await this.getSnippets();
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.DELETE_SNIPPET_BY_NAME_ERROR);

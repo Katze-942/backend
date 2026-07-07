@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
-import { z, ZodError } from 'zod';
 import { join } from 'node:path';
-import * as yaml from 'js-yaml';
+import yaml from 'yaml';
+import { z, ZodError } from 'zod';
 
 import { registerAs } from '@nestjs/config';
 
@@ -21,11 +21,12 @@ const ALL_EVENTS = [
 const eventConfigSchema = z.object({
     telegram: z.boolean(),
     webhook: z.boolean(),
+    additionalWebhookUrls: z.array(z.url()).optional(),
 });
 
 const notificationsConfigSchema = z.object({
     events: z
-        .record(z.enum(ALL_EVENTS as [string, ...string[]]), eventConfigSchema)
+        .partialRecord(z.enum(ALL_EVENTS as [string, ...string[]]), eventConfigSchema)
         .nullable()
         .transform((val) => val ?? {}),
 });
@@ -38,7 +39,7 @@ function validateConfig(raw: unknown): NotificationsConfig {
         return notificationsConfigSchema.parse(raw);
     } catch (e) {
         if (e instanceof ZodError) {
-            const errors = e.errors
+            const errors = e.issues
                 .map((err) => `❌ ${err.path.join('.')}: ${err.message}`)
                 .join('\n');
 
@@ -78,7 +79,7 @@ export default registerAs('notifications', (): NotificationsConfig => {
     }
 
     const content = readFileSync(configPath, 'utf8');
-    const raw = yaml.load(content);
+    const raw = yaml.parse(content);
 
     return validateConfig(raw);
 });

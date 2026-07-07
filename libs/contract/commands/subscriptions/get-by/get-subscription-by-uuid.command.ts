@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { REST_API, SUBSCRIPTIONS_ROUTES } from '../../../api';
-import { SubscriptionInfoSchema } from '../../../models';
 import { getEndpointDetails } from '../../../constants';
+import { SubscriptionInfoSchema } from '../../../models';
 
 export namespace GetSubscriptionByUuidCommand {
     export const url = REST_API.SUBSCRIPTIONS.GET_BY.UUID;
@@ -12,17 +12,17 @@ export namespace GetSubscriptionByUuidCommand {
         SUBSCRIPTIONS_ROUTES.GET_BY.UUID(':uuid'),
         'get',
         'Get subscription by uuid',
+        { scope: 'by-uuid', kind: 'read' },
     );
 
-    export const RequestSchema = z.object({
-        uuid: z.string(),
+    export const RequestParamSchema = z.object({
+        uuid: z.uuid().describe('User UUID'),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const ResponseSchema = z.object({
         response: SubscriptionInfoSchema,
     });
 
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

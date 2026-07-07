@@ -1,10 +1,11 @@
-import relativeTime from 'dayjs/plugin/relativeTime';
+import 'reflect-metadata';
 import { PrismaClient } from '@prisma/client';
+import consola from 'consola';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { Redis } from 'ioredis';
-import consola from 'consola';
-import dayjs from 'dayjs';
 
 import { getRedisConnectionOptions } from '@common/utils';
 
@@ -21,6 +22,7 @@ import {
     syncInbounds,
     verifyAdminUser,
     seedRemnawaveSettings,
+    migrateScopes,
 } from './seeders';
 
 dayjs.extend(utc);
@@ -50,6 +52,7 @@ const SEED_STEPS = [
     { name: 'Response Rules', fn: seedResponseRules },
     { name: 'Subscription Page Config', fn: seedSubscriptionPageConfig },
     { name: 'Verify Admin User', fn: verifyAdminUser },
+    { name: 'Migrate API Token Scopes', fn: migrateScopes },
 ] as const;
 
 async function checkDatabaseConnection() {

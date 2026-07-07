@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
+import { FINGERPRINTS } from '@libs/contracts/constants';
+
 import { SubscriptionTemplateService } from '@modules/subscription-template/subscription-template.service';
 
 import { ResolvedProxyConfig } from '../resolve-proxy/interfaces';
@@ -243,11 +245,12 @@ export class SingBoxGeneratorService {
         if (opts.fingerprint) {
             config.utls = {
                 enabled: true,
-                fingerprint: opts.fingerprint,
+                fingerprint: FINGERPRINTS.find((fp) => opts.fingerprint?.includes(fp)) ?? 'chrome',
             };
         }
 
-        if (opts.allowInsecure) {
+        // allowInsecure
+        if (opts.pinnedPeerCertSha256) {
             config.insecure = true;
         }
 

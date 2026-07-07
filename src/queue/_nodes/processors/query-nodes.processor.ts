@@ -7,9 +7,9 @@ import { QueryBus } from '@nestjs/cqrs';
 
 import { AxiosService } from '@common/axios/axios.service';
 
+import { NodesEntity } from '@modules/nodes';
 import { FindNodesByCriteriaQuery } from '@modules/nodes/queries/find-nodes-by-criteria';
 import { GetNodeByUuidQuery } from '@modules/nodes/queries/get-node-by-uuid';
-import { NodesEntity } from '@modules/nodes';
 
 import { QUEUES_NAMES } from '../../queue.enum';
 import { NODES_JOB_NAMES } from '../constants';
@@ -20,7 +20,7 @@ import { NODES_JOB_NAMES } from '../constants';
         scope: Scope.REQUEST,
     },
     {
-        concurrency: 5,
+        concurrency: 10,
     },
 )
 export class QueryNodesQueueProcessor extends WorkerHost {
@@ -37,17 +37,17 @@ export class QueryNodesQueueProcessor extends WorkerHost {
 
     async process(job: Job) {
         switch (job.name) {
-            case NODES_JOB_NAMES.FETCH_IPS_LIST:
-                return await this.handleFetchIpsList(job);
-            case NODES_JOB_NAMES.FETCH_USERS_IPS_LIST:
-                return await this.handleFetchUsersIpsList(job);
+            case NODES_JOB_NAMES.CONNECTIONS_BY_USER:
+                return await this.handleConnectionsByUser(job);
+            case NODES_JOB_NAMES.CONNECTIONS_BY_NODE:
+                return await this.handleConnectionsByNode(job);
             default:
                 this.logger.warn(`Job "${job.name}" is not handled.`);
                 break;
         }
     }
 
-    private async handleFetchIpsList(job: Job<{ userId: string; userUuid: string }>) {
+    private async handleConnectionsByUser(job: Job<{ userId: string; userUuid: string }>) {
         try {
             const findNodesByCriteriaResult = await this.queryBus.execute(
                 new FindNodesByCriteriaQuery({
@@ -83,8 +83,11 @@ export class QueryNodesQueueProcessor extends WorkerHost {
                 try {
                     const ipsListResponse = await this.axios.getIpsList(
                         { userId: job.data.userId },
-                        node.address,
-                        node.port,
+                        {
+                            address: node.address,
+                            port: node.port,
+                            proxyUrl: node.proxyUrl,
+                        },
                     );
 
                     if (!ipsListResponse.isOk || !ipsListResponse.response.response.ips.length) {
@@ -147,7 +150,7 @@ export class QueryNodesQueueProcessor extends WorkerHost {
         }
     }
 
-    private async handleFetchUsersIpsList(job: Job<{ nodeUuid: string }>) {
+    private async handleConnectionsByNode(job: Job<{ nodeUuid: string }>) {
         try {
             const nodeResult = await this.queryBus.execute(
                 new GetNodeByUuidQuery(job.data.nodeUuid),
@@ -168,10 +171,11 @@ export class QueryNodesQueueProcessor extends WorkerHost {
                 };
             }
 
-            const result = await this.axios.getUsersIpsList(
-                nodeResult.response.address,
-                nodeResult.response.port,
-            );
+            const result = await this.axios.getUsersIpsList({
+                address: nodeResult.response.address,
+                port: nodeResult.response.port,
+                proxyUrl: nodeResult.response.proxyUrl,
+            });
 
             if (!result.isOk) {
                 return {

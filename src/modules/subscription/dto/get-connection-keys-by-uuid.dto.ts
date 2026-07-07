@@ -1,9 +1,9 @@
 import { createZodDto } from 'nestjs-zod';
 
-import { GetConnectionKeysByUuidCommand } from '@libs/contracts/commands/subscriptions';
+import { GetConnectionKeysByUuidCommand } from '@libs/contracts/commands';
 
-export class GetConnectionKeysByUuidRequestDto extends createZodDto(
-    GetConnectionKeysByUuidCommand.RequestSchema,
+export class GetConnectionKeysByUuidParamDto extends createZodDto(
+    GetConnectionKeysByUuidCommand.RequestParamSchema,
 ) {}
 
 export class GetConnectionKeysByUuidResponseDto extends createZodDto(

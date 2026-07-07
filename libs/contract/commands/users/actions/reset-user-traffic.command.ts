@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../../constants';
-import { ExtendedUsersSchema } from '../../../models';
 import { REST_API, USERS_ROUTES } from '../../../api';
+import { getEndpointDetails } from '../../../constants';
+import { UserResponseSchema } from '../user.response';
 
 export namespace ResetUserTrafficCommand {
     export const url = REST_API.USERS.ACTIONS.RESET_TRAFFIC;
@@ -12,17 +12,15 @@ export namespace ResetUserTrafficCommand {
         USERS_ROUTES.ACTIONS.RESET_TRAFFIC(':uuid'),
         'post',
         'Reset user traffic',
+        { scope: 'reset-traffic', kind: 'write' },
     );
 
-    export const RequestSchema = z.object({
-        uuid: z.string().uuid(),
+    export const RequestParamSchema = z.object({
+        uuid: z.uuid(),
     });
 
-    export type Request = z.infer<typeof RequestSchema>;
+    export const ResponseSchema = UserResponseSchema;
 
-    export const ResponseSchema = z.object({
-        response: ExtendedUsersSchema,
-    });
-
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { getEndpointDetails } from '../../constants';
 import { REST_API, USERS_ROUTES } from '../../api';
+import { getEndpointDetails } from '../../constants';
 
 export namespace GetUserSubscriptionRequestHistoryCommand {
     export const url = REST_API.USERS.SUBSCRIPTION_REQUEST_HISTORY;
@@ -11,13 +11,12 @@ export namespace GetUserSubscriptionRequestHistoryCommand {
         USERS_ROUTES.SUBSCRIPTION_REQUEST_HISTORY(':uuid'),
         'get',
         'Get user subscription request history, recent 24 records',
+        { scope: 'subscription-request-history', kind: 'read' },
     );
 
-    export const RequestSchema = z.object({
-        uuid: z.string().uuid(),
+    export const RequestParamSchema = z.object({
+        uuid: z.uuid(),
     });
-
-    export type Request = z.infer<typeof RequestSchema>;
 
     export const ResponseSchema = z.object({
         response: z.object({
@@ -25,11 +24,8 @@ export namespace GetUserSubscriptionRequestHistoryCommand {
             records: z.array(
                 z.object({
                     id: z.number(),
-                    userUuid: z.string().uuid(),
-                    requestAt: z
-                        .string()
-                        .datetime()
-                        .transform((str) => new Date(str)),
+                    userId: z.number(),
+                    requestAt: z.iso.datetime().transform((str) => new Date(str)),
                     requestIp: z.string().optional().nullable(),
                     userAgent: z.string().optional().nullable(),
                 }),
@@ -37,5 +33,6 @@ export namespace GetUserSubscriptionRequestHistoryCommand {
         }),
     });
 
+    export type RequestParam = z.infer<typeof RequestParamSchema>;
     export type Response = z.infer<typeof ResponseSchema>;
 }

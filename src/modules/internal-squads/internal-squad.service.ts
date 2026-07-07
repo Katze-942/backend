@@ -1,22 +1,20 @@
+import { Transactional } from '@nestjs-cls/transactional';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
-import { Transactional } from '@nestjs-cls/transactional';
 import { Injectable, Logger } from '@nestjs/common';
 
 import { fail, ok, TResult } from '@common/types';
 import { ERRORS } from '@libs/contracts/constants/errors';
 
-import { SquadsQueueService } from '@queue/_squads';
 import { NodesQueuesService } from '@queue/_nodes';
+import { SquadsQueueService } from '@queue/_squads';
 
+import { ReorderInternalSquadsBodyDto } from './dtos';
+import { InternalSquadEntity } from './entities/internal-squad.entity';
+import { GetInternalSquadAccessibleNodesResponseModel } from './models';
 import { GetInternalSquadByUuidResponseModel } from './models/get-internal-squad-by-uuid.response.model';
-import { DeleteInternalSquadResponseModel } from './models/delete-internal-squad-by-uuid.response.model';
-import { EventSentInternalSquadResponseModel } from './models/event-sent-internal-squad.response.model';
 import { GetInternalSquadsResponseModel } from './models/get-internal-squads.response.model';
 import { InternalSquadRepository } from './repositories/internal-squad.repository';
-import { GetInternalSquadAccessibleNodesResponseModel } from './models';
-import { InternalSquadEntity } from './entities/internal-squad.entity';
-import { ReorderInternalSquadsRequestDto } from './dtos';
 
 @Injectable()
 export class InternalSquadService {
@@ -206,9 +204,7 @@ export class InternalSquadService {
         /* Clean & Add inbounds */
     }
 
-    public async deleteInternalSquad(
-        uuid: string,
-    ): Promise<TResult<DeleteInternalSquadResponseModel>> {
+    public async deleteInternalSquad(uuid: string): Promise<TResult<boolean>> {
         try {
             const internalSquad = await this.internalSquadRepository.getInternalSquadsByUuid(uuid);
 
@@ -222,7 +218,7 @@ export class InternalSquadService {
                 includedProfiles.add(inbound.profileUuid);
             }
 
-            const deleted = await this.internalSquadRepository.deleteByUUID(uuid);
+            await this.internalSquadRepository.deleteByUUID(uuid);
 
             for (const profileUuid of includedProfiles) {
                 await this.nodesQueuesService.startAllNodesByProfile({
@@ -231,16 +227,14 @@ export class InternalSquadService {
                 });
             }
 
-            return ok(new DeleteInternalSquadResponseModel(deleted));
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.DELETE_INTERNAL_SQUAD_ERROR);
         }
     }
 
-    public async addUsersToInternalSquad(
-        uuid: string,
-    ): Promise<TResult<EventSentInternalSquadResponseModel>> {
+    public async addUsersToInternalSquad(uuid: string): Promise<TResult<boolean>> {
         try {
             const internalSquad = await this.internalSquadRepository.getInternalSquadsByUuid(uuid);
 
@@ -252,16 +246,14 @@ export class InternalSquadService {
                 internalSquadUuid: uuid,
             });
 
-            return ok(new EventSentInternalSquadResponseModel(true));
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.ADD_USERS_TO_INTERNAL_SQUAD_ERROR);
         }
     }
 
-    public async removeUsersFromInternalSquad(
-        uuid: string,
-    ): Promise<TResult<EventSentInternalSquadResponseModel>> {
+    public async removeUsersFromInternalSquad(uuid: string): Promise<TResult<boolean>> {
         try {
             const internalSquad = await this.internalSquadRepository.getInternalSquadsByUuid(uuid);
 
@@ -273,7 +265,7 @@ export class InternalSquadService {
                 internalSquadUuid: uuid,
             });
 
-            return ok(new EventSentInternalSquadResponseModel(true));
+            return ok(true);
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.REMOVE_USERS_FROM_INTERNAL_SQUAD_ERROR);
@@ -310,7 +302,7 @@ export class InternalSquadService {
     }
 
     public async reorderInternalSquads(
-        dto: ReorderInternalSquadsRequestDto,
+        dto: ReorderInternalSquadsBodyDto,
     ): Promise<TResult<GetInternalSquadsResponseModel>> {
         try {
             await this.internalSquadRepository.reorderMany(dto.items);

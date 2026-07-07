@@ -1,13 +1,12 @@
+import { GetLegacyStatsUserUsageCommand } from '@contract/commands';
 import { createZodDto } from 'nestjs-zod';
 
-import { GetLegacyStatsUserUsageCommand } from '@contract/commands';
-
-export class GetLegacyStatsUserUsageRequestQueryDto extends createZodDto(
+export class GetLegacyStatsUserUsageQueryDto extends createZodDto(
     GetLegacyStatsUserUsageCommand.RequestQuerySchema,
 ) {}
 
-export class GetLegacyStatsUserUsageRequestDto extends createZodDto(
-    GetLegacyStatsUserUsageCommand.RequestSchema,
+export class GetLegacyStatsUserUsageParamDto extends createZodDto(
+    GetLegacyStatsUserUsageCommand.RequestParamSchema,
 ) {}
 
 export class GetLegacyStatsUserUsageResponseDto extends createZodDto(

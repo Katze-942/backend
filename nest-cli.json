@@ -4,8 +4,17 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "tsConfigPath": "tsconfig.json"
+    "tsConfigPath": "tsconfig.json",
+    "builder": {
+      "type": "swc",
+      "options": {
+        "filenames": ["src", "libs", "prisma"],
+        "stripLeadingPaths": false
+      }
+    },
+    "typeCheck": true
   },
+
   "projects": {
     "app": {
       "type": "application",
