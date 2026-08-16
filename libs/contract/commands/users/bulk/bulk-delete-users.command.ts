@@ -10,12 +10,12 @@ export namespace BulkDeleteUsersCommand {
     export const endpointDetails = getEndpointDetails(
         USERS_ROUTES.BULK.DELETE,
         'post',
-        'Bulk delete users by UUIDs',
+        'Bulk delete users by User IDs',
         { scope: 'bulk-delete', kind: 'write' },
     );
 
     export const RequestBodySchema = z.object({
-        uuids: z.array(z.uuid()).min(1).max(500),
+        userIds: z.array(z.number()).min(1).max(500),
     });
 
     export type RequestBody = z.infer<typeof RequestBodySchema>;

@@ -1,5 +1,5 @@
 x-base: &base
-  image: ghcr.io/katze-942/backend:main
+  image: ghcr.io/katze-942/backend:latest
 
 x-common: &common
   ulimits:

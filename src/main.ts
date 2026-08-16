@@ -92,6 +92,8 @@ async function bootstrap(): Promise<void> {
         },
     });
 
+    app.use(getRealIp);
+
     app.use((req: Request, res: Response, next: NextFunction) => {
         if (req.path.startsWith(`${ROOT}${BACKEND_TOOLS_ROOT}`)) {
             return toolsAuthMiddleware(config.getOrThrow('APP_SECRET'))(req, res, next);
@@ -107,8 +109,6 @@ async function bootstrap(): Promise<void> {
             return helmetMiddleware(req, res, next);
         });
     }
-
-    app.use(getRealIp);
 
     if (config.getOrThrow('IS_HTTP_LOGGING_ENABLED')) {
         app.use(
@@ -145,5 +145,10 @@ async function bootstrap(): Promise<void> {
     await app.listen(Number(config.getOrThrow('APP_PORT')));
 
     logger.info('\n' + (await getStartMessage()) + '\n');
+
+    if (import.meta.webpackHot) {
+        import.meta.webpackHot.accept();
+        import.meta.webpackHot.dispose(() => app.close());
+    }
 }
 void bootstrap();

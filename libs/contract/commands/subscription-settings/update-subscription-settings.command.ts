@@ -22,19 +22,9 @@ export namespace UpdateSubscriptionSettingsCommand {
 
     export const RequestBodySchema = z.object({
         uuid: z.uuid(),
-
-        profileTitle: z.optional(z.string()),
-        supportLink: z.optional(z.string()),
-        profileUpdateInterval: z.optional(z.int()),
-        isProfileWebpageUrlEnabled: z.optional(z.boolean()),
         serveJsonAtBaseSubscription: z.optional(z.boolean()),
-
-        happAnnounce: z.optional(z.string().max(200).nullable()),
-        happRouting: z.optional(z.string().nullable()),
-
         isShowCustomRemarks: z.optional(z.boolean()),
         customRemarks: z.optional(CustomRemarksSchema),
-
         customResponseHeaders: z.optional(
             z.record(
                 z
@@ -46,9 +36,7 @@ export namespace UpdateSubscriptionSettingsCommand {
                 z.string(),
             ),
         ),
-
         randomizeHosts: z.optional(z.boolean()),
-
         responseRules: z.optional(ResponseRulesConfigSchema),
         hwidSettings: z.optional(HwidSettingsSchema),
     });

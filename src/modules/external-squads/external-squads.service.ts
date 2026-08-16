@@ -93,14 +93,15 @@ export class ExternalSquadService {
             templates,
             subscriptionSettings,
             hostOverrides,
-            responseHeaders,
+            responseHeadersAdd,
+            responseHeadersRemove,
             hwidSettings,
             customRemarks,
             subpageConfigUuid,
         } = dto;
 
         try {
-            const externalSquad = await this.externalSquadRepository.findByUUID(uuid);
+            const externalSquad = await this.externalSquadRepository.getExternalSquadByUuid(uuid);
 
             if (!externalSquad) {
                 return fail(ERRORS.EXTERNAL_SQUAD_NOT_FOUND);
@@ -129,11 +130,31 @@ export class ExternalSquadService {
                 name: name,
                 subscriptionSettings: subscriptionSettings,
                 hostOverrides: hostOverrides,
-                responseHeaders: responseHeaders,
+                responseHeadersAdd: responseHeadersAdd
+                    ? Object.fromEntries(
+                          Object.entries(responseHeadersAdd).map(([key, value]) => [
+                              key.toLowerCase(),
+                              value,
+                          ]),
+                      )
+                    : responseHeadersAdd,
+
+                responseHeadersRemove: responseHeadersRemove
+                    ? responseHeadersRemove.map((header) => header.toLowerCase())
+                    : responseHeadersRemove,
                 hwidSettings: hwidSettings,
                 customRemarks: customRemarks,
                 subpageConfigUuid: subpageConfigUuid,
             });
+
+            for (const template of externalSquad.templates) {
+                await this.rawCacheService.del(
+                    CACHE_KEYS.EXTERNAL_SQUAD_TEMPLATE_NAME(
+                        externalSquad.uuid,
+                        template.templateType,
+                    ),
+                );
+            }
 
             if (templates !== undefined) {
                 await this.syncExternalSquadTemplates(externalSquad, templates);

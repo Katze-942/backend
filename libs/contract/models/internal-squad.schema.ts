@@ -14,6 +14,8 @@ export const InternalSquadSchema = z.object({
 
     inbounds: z.array(ConfigProfileInboundsSchema),
 
-    createdAt: z.iso.datetime().transform((str) => new Date(str)),
-    updatedAt: z.iso.datetime().transform((str) => new Date(str)),
+    createdAt: z.iso.datetime()
+        .transform((str) => new Date(str)),
+    updatedAt: z.iso.datetime()
+        .transform((str) => new Date(str)),
 });

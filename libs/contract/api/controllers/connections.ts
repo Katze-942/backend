@@ -2,7 +2,7 @@ export const CONNECTIONS_CONTROLLER = 'connections' as const;
 
 export const CONNECTIONS_ROUTES = {
     // POST
-    CONNECTIONS_BY_USER: (uuid: string) => `by-user/${uuid}`,
+    CONNECTIONS_BY_USER: (userId: string) => `by-user/${userId}`,
     // GET
     CONNECTIONS_BY_USER_RESULT: (jobId: string) => `by-user/${jobId}`,
 

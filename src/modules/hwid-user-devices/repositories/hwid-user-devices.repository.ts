@@ -89,6 +89,12 @@ export class HwidUserDevicesRepository implements Omit<
         });
     }
 
+    public async countCreatedInRange(start: Date, endExclusive: Date): Promise<number> {
+        return await this.prisma.tx.hwidUserDevices.count({
+            where: { createdAt: { gte: start, lt: endExclusive } },
+        });
+    }
+
     public async checkHwidExists(hwid: string, userId: bigint): Promise<boolean> {
         const result = await this.qb.kysely
             .selectNoFrom((eb) =>
@@ -212,6 +218,8 @@ export class HwidUserDevicesRepository implements Omit<
                 sql<string>`SPLIT_PART("user_agent", '/', 1)`.as('app'),
                 (eb) => eb.fn.count('hwid').as('count'),
             ])
+            .where('platform', 'is not', null)
+            .where('userAgent', 'is not', null)
             .groupBy(['platform', sql`SPLIT_PART("user_agent", '/', 1)`])
             .execute();
 
@@ -273,15 +281,11 @@ export class HwidUserDevicesRepository implements Omit<
     public async getTopUsersByHwidDevices({ start, size }: { start: number; size: number }) {
         const query = this.qb.kysely
             .selectFrom('hwidUserDevices as d')
-            .innerJoin('users as u', 'u.tId', 'd.userId')
-            .select([
-                'u.uuid as userUuid',
-                'u.tId as id',
-                'u.username',
-                (eb) => eb.fn.count('d.hwid').as('devicesCount'),
-            ])
-            .groupBy(['u.uuid', 'u.tId', 'u.username'])
+            .innerJoin('users as u', 'u.id', 'd.userId')
+            .select(['u.id as id', 'u.username', (eb) => eb.fn.count('d.hwid').as('devicesCount')])
+            .groupBy(['u.id', 'u.username'])
             .orderBy('devicesCount', 'desc')
+            .orderBy('u.id', 'asc')
             .offset(start)
             .limit(size);
 
@@ -294,7 +298,7 @@ export class HwidUserDevicesRepository implements Omit<
 
         return {
             users: users.map((u) => ({
-                ...u,
+                username: u.username,
                 id: Number(u.id),
                 devicesCount: Number(u.devicesCount),
             })),

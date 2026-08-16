@@ -1,4 +1,3 @@
-import { instanceToPlain } from 'class-transformer';
 import dayjs from 'dayjs';
 import { serialize } from 'superjson';
 
@@ -60,10 +59,8 @@ export class WebhookEvents {
                 scope: EVENTS_SCOPES.USER,
                 event: event.eventName,
                 timestamp: dayjs().toISOString(),
-                data: instanceToPlain(
-                    new GetFullUserResponseModel(event.user, this.subPublicDomain),
-                ),
-                meta: instanceToPlain(event.meta),
+                data: new GetFullUserResponseModel(event.user, this.subPublicDomain),
+                meta: event.meta,
             };
 
             const { json } = serialize(payload);
@@ -91,11 +88,9 @@ export class WebhookEvents {
                 scope: EVENTS_SCOPES.NODE,
                 event: event.eventName,
                 timestamp: dayjs().toISOString(),
-                data: instanceToPlain(
-                    new NodeResponseModel(
-                        event.node,
-                        await this.getNodesSystemInfo(event.node.uuid),
-                    ),
+                data: new NodeResponseModel(
+                    event.node,
+                    await this.getNodesSystemInfo(event.node.uuid),
                 ),
             };
 
@@ -124,7 +119,7 @@ export class WebhookEvents {
                 scope: EVENTS_SCOPES.SERVICE,
                 event: event.eventName,
                 timestamp: dayjs().toISOString(),
-                data: instanceToPlain(event.data),
+                data: event.data,
             };
 
             const { json } = serialize(payload);
@@ -152,7 +147,7 @@ export class WebhookEvents {
                 scope: EVENTS_SCOPES.ERRORS,
                 event: event.eventName,
                 timestamp: dayjs().toISOString(),
-                data: instanceToPlain(event.data),
+                data: event.data,
             };
 
             const { json } = serialize(payload);
@@ -180,7 +175,7 @@ export class WebhookEvents {
                 scope: EVENTS_SCOPES.CRM,
                 event: event.eventName,
                 timestamp: dayjs().toISOString(),
-                data: instanceToPlain(event.data),
+                data: event.data,
             };
 
             const { json } = serialize(payload);
@@ -208,10 +203,10 @@ export class WebhookEvents {
                 scope: EVENTS_SCOPES.USER_HWID_DEVICES,
                 event: event.eventName,
                 timestamp: dayjs().toISOString(),
-                data: instanceToPlain({
+                data: {
                     hwidUserDevice: new BaseUserHwidDevicesResponseModel(event.data.hwidUserDevice),
                     user: new GetFullUserResponseModel(event.data.user, this.subPublicDomain),
-                }),
+                },
             };
 
             const { json } = serialize(payload);
@@ -239,14 +234,14 @@ export class WebhookEvents {
                 scope: EVENTS_SCOPES.TORRENT_BLOCKER,
                 event: event.eventName,
                 timestamp: dayjs().toISOString(),
-                data: instanceToPlain({
+                data: {
                     ...event.data,
                     node: new NodeResponseModel(
                         event.data.node,
                         await this.getNodesSystemInfo(event.data.node.uuid),
                     ),
                     user: new GetFullUserResponseModel(event.data.user, this.subPublicDomain),
-                }),
+                },
             };
 
             const { json } = serialize(payload);

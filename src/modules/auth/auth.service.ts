@@ -99,6 +99,7 @@ export class AuthService {
                     userAgent,
                     'Login is not allowed.',
                 );
+                this.logger.error('Login is not allowed.');
                 return fail(ERRORS.FORBIDDEN);
             }
 
@@ -112,6 +113,9 @@ export class AuthService {
                     password,
                     ip,
                     userAgent,
+                    'Someone tried to login with password authentication, but it is disabled.',
+                );
+                this.logger.error(
                     'Someone tried to login with password authentication, but it is disabled.',
                 );
                 return fail(ERRORS.FORBIDDEN);
@@ -130,6 +134,7 @@ export class AuthService {
                     userAgent,
                     'Admin is not found in database.',
                 );
+                this.logger.error('Admin is not found in database.');
                 return fail(ERRORS.FORBIDDEN);
             }
 
@@ -146,6 +151,7 @@ export class AuthService {
                     userAgent,
                     'Invalid password.',
                 );
+                this.logger.error('Invalid password.');
                 return fail(ERRORS.FORBIDDEN);
             }
 
@@ -1094,11 +1100,14 @@ export class AuthService {
         isPocketId: boolean = false,
     ): Promise<arctic.OAuth2Client> {
         if (isPocketId) {
-            const { clientId, clientSecret } = settings.oauth2Settings.pocketid;
-            if (!clientId || !clientSecret) {
-                throw new Error('PocketID OAuth2 clientId or clientSecret not configured.');
+            const { clientId, clientSecret, frontendDomain } = settings.oauth2Settings.pocketid;
+            if (!clientId || !clientSecret || !frontendDomain) {
+                throw new Error(
+                    'PocketID OAuth2 config is incomplete (clientId, clientSecret, plainDomain, frontendDomain).',
+                );
             }
-            return new arctic.OAuth2Client(clientId, clientSecret, null);
+            const redirectUrl = `https://${frontendDomain}/${AUTH_ROUTES.OAUTH2.CALLBACK}/${OAUTH2_PROVIDERS.POCKETID}`;
+            return new arctic.OAuth2Client(clientId, clientSecret, redirectUrl);
         } else {
             const { clientId, clientSecret, frontendDomain } = settings.oauth2Settings.generic;
             if (!clientId || !clientSecret || !frontendDomain) {

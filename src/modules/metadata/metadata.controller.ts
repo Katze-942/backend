@@ -48,7 +48,7 @@ export class MetadataController {
     async getUserMetadata(
         @Param() params: GetUserMetadataParamDto,
     ): Promise<GetUserMetadataResponseDto> {
-        const result = await this.metadataService.getUserMetadata(params.uuid);
+        const result = await this.metadataService.getUserMetadata(params.userId);
 
         const data = errorHandler(result);
         return {
@@ -65,7 +65,7 @@ export class MetadataController {
         @Param() params: GetUserMetadataParamDto,
         @Body() body: UpsertUserMetadataBodyDto,
     ): Promise<UpsertUserMetadataResponseDto> {
-        const result = await this.metadataService.upsertUserMetadata(params.uuid, body.metadata);
+        const result = await this.metadataService.upsertUserMetadata(params.userId, body.metadata);
 
         const data = errorHandler(result);
         return {

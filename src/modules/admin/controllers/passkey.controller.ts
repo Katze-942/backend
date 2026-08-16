@@ -18,7 +18,7 @@ import {
 } from '@libs/contracts/commands';
 import { ROLE } from '@libs/contracts/constants';
 
-import { IJWTAuthPayload } from '@modules/auth/interfaces';
+import type { IJWTAuthPayload } from '@modules/auth/interfaces';
 
 import {
     DeletePasskeyBodyDto,

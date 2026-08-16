@@ -75,5 +75,10 @@ async function bootstrap(): Promise<void> {
 
     const axiosService = app.get(AxiosService);
     await axiosService.setJwt();
+
+    if (import.meta.webpackHot) {
+        import.meta.webpackHot.accept();
+        import.meta.webpackHot.dispose(() => app.close());
+    }
 }
 void bootstrap();

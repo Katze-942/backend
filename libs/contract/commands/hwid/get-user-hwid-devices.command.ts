@@ -6,17 +6,17 @@ import { HwidUserDeviceSchema } from '../../models';
 
 export namespace GetUserHwidDevicesCommand {
     export const url = REST_API.HWID.GET_USER_HWID_DEVICES;
-    export const TSQ_url = url(':userUuid');
+    export const TSQ_url = url(':userId');
 
     export const endpointDetails = getEndpointDetails(
-        HWID_ROUTES.GET_USER_HWID_DEVICES(':userUuid'),
+        HWID_ROUTES.GET_USER_HWID_DEVICES(':userId'),
         'get',
         'Get user HWID devices',
         { scope: 'list-by-user', kind: 'read' },
     );
 
     export const RequestParamSchema = z.object({
-        userUuid: z.uuid(),
+        userId: z.coerce.number(),
     });
 
     export const ResponseSchema = z.object({

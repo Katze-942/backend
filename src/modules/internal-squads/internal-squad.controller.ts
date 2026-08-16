@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Param, UseFilters, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Param, Query, UseFilters, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiConflictResponse, ApiTags } from '@nestjs/swagger';
 
 import { Endpoint } from '@common/decorators/base-endpoint/base-endpoint';
@@ -11,13 +11,16 @@ import { ScopesGuard } from '@common/guards/scopes';
 import { errorHandler } from '@common/helpers/error-handler.helper';
 import { CONTROLLERS_INFO, INTERNAL_SQUADS_CONTROLLER } from '@libs/contracts/api';
 import {
+    AddManyUsersToInternalSquadCommand,
     AddUsersToInternalSquadCommand,
     CreateInternalSquadCommand,
     DeleteInternalSquadCommand,
+    DeleteManyUsersFromInternalSquadCommand,
     DeleteUsersFromInternalSquadCommand,
     GetInternalSquadAccessibleNodesCommand,
     GetInternalSquadCommand,
     GetInternalSquadsCommand,
+    GetInternalSquadUsageCommand,
     ReorderInternalSquadCommand,
     UpdateInternalSquadCommand,
 } from '@libs/contracts/commands';
@@ -30,6 +33,9 @@ import {
     DeleteInternalSquadParamDto,
     GetInternalSquadAccessibleNodesParamDto,
     GetInternalSquadAccessibleNodesResponseDto,
+    GetInternalSquadUsageParamDto,
+    GetInternalSquadUsageQueryDto,
+    GetInternalSquadUsageResponseDto,
     GetInternalSquadParamDto,
     GetInternalSquadResponseDto,
     GetInternalSquadsResponseDto,
@@ -38,6 +44,10 @@ import {
     ReorderInternalSquadsResponseDto,
     UpdateInternalSquadBodyDto,
     UpdateInternalSquadResponseDto,
+    DeleteManyUsersFromInternalSquadBodyDto,
+    AddManyUsersToInternalSquadBodyDto,
+    AddManyUsersToInternalSquadParamDto,
+    DeleteManyUsersFromInternalSquadParamDto,
 } from './dtos';
 import { InternalSquadService } from './internal-squad.service';
 
@@ -119,6 +129,23 @@ export class InternalSquadController {
         };
     }
 
+    @Endpoint({
+        command: GetInternalSquadUsageCommand,
+        httpCode: HttpStatus.OK,
+        type: GetInternalSquadUsageResponseDto,
+    })
+    async getInternalSquadUsage(
+        @Param() param: GetInternalSquadUsageParamDto,
+        @Query() query: GetInternalSquadUsageQueryDto,
+    ): Promise<GetInternalSquadUsageResponseDto> {
+        const result = await this.internalSquadService.getSquadUsage(param.uuid, query);
+
+        const data = errorHandler(result);
+        return {
+            response: data,
+        };
+    }
+
     @ApiConflictResponse({
         description: 'Internal squad already exists',
     })
@@ -189,5 +216,39 @@ export class InternalSquadController {
         return {
             response: data,
         };
+    }
+
+    @Endpoint({
+        command: AddManyUsersToInternalSquadCommand,
+        httpCode: HttpStatus.ACCEPTED,
+    })
+    async addManyUsersToInternalSquad(
+        @Param() param: AddManyUsersToInternalSquadParamDto,
+        @Body() body: AddManyUsersToInternalSquadBodyDto,
+    ) {
+        const result = await this.internalSquadService.addManyUsersToInternalSquad(
+            param.uuid,
+            body.userIds,
+        );
+
+        errorHandler(result);
+        return;
+    }
+
+    @Endpoint({
+        command: DeleteManyUsersFromInternalSquadCommand,
+        httpCode: HttpStatus.ACCEPTED,
+    })
+    async removeManyUsersFromInternalSquad(
+        @Param() param: DeleteManyUsersFromInternalSquadParamDto,
+        @Body() body: DeleteManyUsersFromInternalSquadBodyDto,
+    ) {
+        const result = await this.internalSquadService.removeManyUsersFromInternalSquad(
+            param.uuid,
+            body.userIds,
+        );
+
+        errorHandler(result);
+        return;
     }
 }

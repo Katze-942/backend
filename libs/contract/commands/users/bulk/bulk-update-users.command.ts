@@ -12,12 +12,12 @@ export namespace BulkUpdateUsersCommand {
     export const endpointDetails = getEndpointDetails(
         USERS_ROUTES.BULK.UPDATE,
         'post',
-        'Bulk update users by UUIDs',
+        'Bulk update users by User IDs',
         { scope: 'bulk-update-users', kind: 'write' },
     );
 
     export const RequestBodySchema = z.object({
-        uuids: z.array(z.uuid()).min(1).max(500),
+        userIds: z.array(z.number()).min(1).max(500),
         fields: z.object({
             status: UsersSchema.shape.status.optional(),
             trafficLimitBytes: z.optional(

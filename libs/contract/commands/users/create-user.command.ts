@@ -40,7 +40,7 @@ export namespace CreateUserCommand {
             .optional()
             .describe('Optional. Password for Trojan protocol. Must be 8-32 characters.'),
         vlessUuid: z
-            .uuid('Invalid Vless UUID format')
+            .guid('Invalid Vless UUID format')
             .optional()
             .describe('Optional. UUID for VLESS protocol. Must be a valid UUID format.'),
         ssPassword: z
@@ -114,13 +114,6 @@ export namespace CreateUserCommand {
             .array(z.uuid())
             .optional()
             .describe('Optional. Array of UUIDs representing enabled internal squads.'),
-        uuid: z.optional(
-            z
-                .uuid()
-                .describe(
-                    'Optional. Pass UUID to create user with specific UUID, otherwise it will be generated automatically.',
-                ),
-        ),
         externalSquadUuid: z
             .optional(z.nullable(z.uuid()))
             .describe('Optional. External squad UUID.'),

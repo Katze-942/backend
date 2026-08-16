@@ -70,7 +70,7 @@ export class UsersBulkActionsController {
         httpCode: HttpStatus.NO_CONTENT,
     })
     async bulkDeleteUsers(@Body() body: BulkDeleteUsersBodyDto) {
-        const result = await this.usersService.bulkDeleteUsersByUuid(body.uuids);
+        const result = await this.usersService.bulkDeleteUsersByUserId(body.userIds);
 
         errorHandler(result);
         return;
@@ -81,7 +81,7 @@ export class UsersBulkActionsController {
         httpCode: HttpStatus.ACCEPTED,
     })
     async bulkRevokeUsersSubscription(@Body() body: BulkRevokeUsersSubscriptionBodyDto) {
-        const result = await this.usersService.bulkRevokeUsersSubscription(body.uuids);
+        const result = await this.usersService.bulkRevokeUsersSubscription(body.userIds);
 
         errorHandler(result);
         return;
@@ -92,7 +92,7 @@ export class UsersBulkActionsController {
         httpCode: HttpStatus.ACCEPTED,
     })
     async bulkResetUserTraffic(@Body() body: BulkResetTrafficUsersBodyDto) {
-        const result = await this.usersService.bulkResetUserTraffic(body.uuids);
+        const result = await this.usersService.bulkResetUserTraffic(body.userIds);
 
         errorHandler(result);
         return;
@@ -115,7 +115,7 @@ export class UsersBulkActionsController {
     })
     async bulkUpdateUsersInternalSquads(@Body() body: BulkUpdateUsersSquadsBodyDto) {
         const result = await this.usersService.bulkUpdateUsersInternalSquads(
-            body.uuids,
+            body.userIds,
             body.activeInternalSquads,
         );
 
@@ -129,7 +129,7 @@ export class UsersBulkActionsController {
     })
     async bulkExtendExpirationDate(@Body() body: BulkExtendExpirationDateBodyDto) {
         const result = await this.usersService.bulkExtendExpirationDate({
-            uuids: body.uuids,
+            userIds: body.userIds,
             extendDays: body.extendDays,
         });
 

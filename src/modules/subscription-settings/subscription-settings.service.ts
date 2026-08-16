@@ -76,6 +76,15 @@ export class SubscriptionSettingsService {
                 }
             }
 
+            if (dto.customResponseHeaders && Object.keys(dto.customResponseHeaders).length > 0) {
+                dto.customResponseHeaders = Object.fromEntries(
+                    Object.entries(dto.customResponseHeaders).map(([key, value]) => [
+                        key.toLowerCase(),
+                        value,
+                    ]),
+                );
+            }
+
             const updatedSettings = await this.subscriptionSettingsRepository.update({
                 ...dto,
             });

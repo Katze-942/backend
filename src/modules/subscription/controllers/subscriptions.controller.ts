@@ -22,21 +22,20 @@ import { RolesGuard } from '@common/guards/roles';
 import { ScopesGuard } from '@common/guards/scopes';
 import { errorHandler } from '@common/helpers/error-handler.helper';
 import { extractHwidHeaders } from '@common/utils/extract-hwid-headers';
-import { truncateHeader } from '@common/utils/truncate-header.util';
 import { CONTROLLERS_INFO, SUBSCRIPTIONS_CONTROLLER } from '@libs/contracts/api';
 import {
-    GetConnectionKeysByUuidCommand,
+    GetConnectionKeysByUserIdCommand,
     GetRawSubscriptionByShortUuidCommand,
+    GetSubscriptionByIdCommand,
     GetSubscriptionByShortUuidProtectedCommand,
     GetSubscriptionByUsernameCommand,
-    GetSubscriptionByUuidCommand,
     GetSubscriptionsCommand,
 } from '@libs/contracts/commands';
 import { GetSubpageConfigByShortUuidCommand } from '@libs/contracts/commands/subscriptions/subpage/get-subpage-config-by-shortuuid.command';
 import { ROLE } from '@libs/contracts/constants';
 
 import {
-    GetConnectionKeysByUuidResponseDto,
+    GetConnectionKeysByUserIdResponseDto,
     GetRawSubscriptionByShortUuidParamDto,
     GetRawSubscriptionByShortUuidQueryDto,
     GetRawSubscriptionByShortUuidResponseDto,
@@ -44,9 +43,9 @@ import {
     GetSubscriptionByShortUuidProtectedResponseDto,
     GetSubscriptionByUsernameParamDto,
     GetSubscriptionByUsernameResponseDto,
-    GetSubscriptionByUuidParamDto,
-    GetSubscriptionByUuidResponseDto,
-    GetConnectionKeysByUuidParamDto,
+    GetSubscriptionByIdParamDto,
+    GetSubscriptionByIdResponseDto,
+    GetConnectionKeysByUserIdParamDto,
     GetSubscriptionsResponseDto,
     GetSubscriptionsQueryDto,
 } from '../dto';
@@ -140,18 +139,18 @@ export class SubscriptionsController {
     }
 
     @Endpoint({
-        command: GetSubscriptionByUuidCommand,
+        command: GetSubscriptionByIdCommand,
         httpCode: HttpStatus.OK,
-        type: GetSubscriptionByUuidResponseDto,
+        type: GetSubscriptionByIdResponseDto,
     })
     async getSubscriptionByUuid(
-        @Param() param: GetSubscriptionByUuidParamDto,
-    ): Promise<GetSubscriptionByUuidResponseDto> {
-        const { uuid } = param;
+        @Param() param: GetSubscriptionByIdParamDto,
+    ): Promise<GetSubscriptionByIdResponseDto> {
+        const { userId } = param;
         const result = await this.subscriptionService.getSubscriptionInfo({
             searchBy: {
-                uniqueField: uuid,
-                uniqueFieldKey: 'uuid',
+                uniqueField: BigInt(userId),
+                uniqueFieldKey: 'id',
             },
             authenticated: true,
         });
@@ -176,7 +175,6 @@ export class SubscriptionsController {
     ): Promise<GetRawSubscriptionByShortUuidResponseDto> {
         const result = await this.subscriptionService.getRawSubscriptionByShortUuid(
             shortUuid,
-            truncateHeader(request.headers['user-agent']),
             withDisabledHosts,
             extractHwidHeaders(request),
             ip,
@@ -210,15 +208,15 @@ export class SubscriptionsController {
     }
 
     @Endpoint({
-        command: GetConnectionKeysByUuidCommand,
+        command: GetConnectionKeysByUserIdCommand,
         httpCode: HttpStatus.OK,
-        type: GetConnectionKeysByUuidResponseDto,
+        type: GetConnectionKeysByUserIdResponseDto,
     })
-    async getConnectionKeysByUuid(
-        @Param() param: GetConnectionKeysByUuidParamDto,
-    ): Promise<GetConnectionKeysByUuidResponseDto> {
-        const { uuid } = param;
-        const result = await this.subscriptionService.getConnectionKeysByUuid(uuid);
+    async getConnectionKeysByUserId(
+        @Param() param: GetConnectionKeysByUserIdParamDto,
+    ): Promise<GetConnectionKeysByUserIdResponseDto> {
+        const { userId } = param;
+        const result = await this.subscriptionService.getConnectionKeysByUserId(userId);
         const data = errorHandler(result);
         return {
             response: data,

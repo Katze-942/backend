@@ -15,7 +15,7 @@ import { CACHE_KEYS } from '@libs/contracts/constants';
 import { ERRORS } from '@libs/contracts/constants/errors';
 
 import { PasskeyEntity } from '@modules/admin/entities';
-import { IJWTAuthPayload } from '@modules/auth/interfaces';
+import type { IJWTAuthPayload } from '@modules/auth/interfaces';
 import { GetCachedRemnawaveSettingsQuery } from '@modules/remnawave-settings/queries/get-cached-remnawave-settings';
 
 import { UpdatePasskeyBodyDto, VerifyPasskeyRegistrationBodyDto } from '../dtos';

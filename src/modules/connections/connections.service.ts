@@ -8,7 +8,6 @@ import { NodesEntity } from '@modules/nodes/entities/nodes.entity';
 import { FindNodesByCriteriaQuery } from '@modules/nodes/queries/find-nodes-by-criteria';
 import { GetNodeByUuidQuery } from '@modules/nodes/queries/get-node-by-uuid';
 import { GetUserByUniqueFieldQuery } from '@modules/users/queries/get-user-by-unique-field';
-import { GetUserIdsByUserUuidsQuery } from '@modules/users/queries/get-user-ids-by-user-uuids';
 
 import { NodesQueuesService } from '@queue/_nodes';
 
@@ -28,19 +27,18 @@ export class ConnectionsService {
     ) {}
 
     public async connectionsByUser(
-        userUuid: string,
+        userId: number,
     ): Promise<TResult<ConnectionsByUserResponseModel>> {
         try {
             const user = await this.queryBus.execute(
-                new GetUserByUniqueFieldQuery({ uuid: userUuid }),
+                new GetUserByUniqueFieldQuery({ id: BigInt(userId) }),
             );
             if (!user.isOk) {
                 return fail(ERRORS.USER_NOT_FOUND);
             }
 
             const result = await this.nodesQueuesService.connectionsByUser({
-                userId: user.response.tId.toString(),
-                userUuid: userUuid,
+                userId: Number(user.response.id),
             });
 
             if (!result) {
@@ -98,18 +96,11 @@ export class ConnectionsService {
             }
 
             switch (dto.dropBy.by) {
-                case 'userUuids':
-                    const userIds = await this.queryBus.execute(
-                        new GetUserIdsByUserUuidsQuery(dto.dropBy.userUuids),
-                    );
-                    if (!userIds.isOk) {
-                        return fail(ERRORS.USER_NOT_FOUND);
-                    }
-
+                case 'userIds':
                     for (const node of nodes) {
                         await this.nodesQueuesService.dropUsersConnections({
                             data: {
-                                userIds: userIds.response.map((userId) => userId.toString()),
+                                userIds: dto.dropBy.userIds.map((userId) => userId.toString()),
                             },
                             node: {
                                 address: node.address,

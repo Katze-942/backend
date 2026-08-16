@@ -41,7 +41,7 @@ export class ApiTokensController {
         httpCode: HttpStatus.CREATED,
         type: CreateApiTokenResponseDto,
     })
-    async create(@Body() body: CreateApiTokenBodyDto): Promise<CreateApiTokenResponseDto> {
+    async createApiToken(@Body() body: CreateApiTokenBodyDto): Promise<CreateApiTokenResponseDto> {
         const result = await this.apiTokensService.create(body);
 
         const data = errorHandler(result);
@@ -54,9 +54,10 @@ export class ApiTokensController {
         command: DeleteApiTokenCommand,
         httpCode: HttpStatus.NO_CONTENT,
     })
-    async delete(@Param() paramData: DeleteApiTokenParamDto) {
-        errorHandler(await this.apiTokensService.delete(paramData.uuid));
+    async deleteApiToken(@Param() param: DeleteApiTokenParamDto) {
+        const result = await this.apiTokensService.delete(param.uuid);
 
+        errorHandler(result);
         return;
     }
 

@@ -2,20 +2,21 @@ import { z } from 'zod';
 
 import { BANDWIDTH_STATS_ROUTES, REST_API } from '../../../api';
 import { getEndpointDetails } from '../../../constants';
+import { numberParamSchema } from '../../../models';
 
 export namespace GetStatsUserUsageCommand {
-    export const url = REST_API.BANDWIDTH_STATS.USERS.GET_BY_UUID;
-    export const TSQ_url = url(':uuid');
+    export const url = REST_API.BANDWIDTH_STATS.USERS.GET_BY_ID;
+    export const TSQ_url = url(':userId');
 
     export const endpointDetails = getEndpointDetails(
-        BANDWIDTH_STATS_ROUTES.USERS.GET_BY_UUID(':uuid'),
+        BANDWIDTH_STATS_ROUTES.USERS.GET_BY_ID(':userId'),
         'get',
         'Get User Usage by Range',
         { scope: 'user-usage', kind: 'read' },
     );
 
     export const RequestParamSchema = z.object({
-        uuid: z.uuid().describe('UUID of the user'),
+        userId: numberParamSchema.describe('ID of the user'),
     });
 
     export const RequestQuerySchema = z.object({

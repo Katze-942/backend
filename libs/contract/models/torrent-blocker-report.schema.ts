@@ -8,7 +8,6 @@ export const TorrentBlockerReportSchema = z.object({
     userId: z.number(),
     nodeId: z.number(),
     user: ExtendedUsersSchema.pick({
-        uuid: true,
         username: true,
     }),
     node: NodesSchema.pick({

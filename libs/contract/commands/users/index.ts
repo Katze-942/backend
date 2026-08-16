@@ -9,7 +9,7 @@ export * from './get-users.command';
 export * from './get-by';
 export * from './get-user-accessible-nodes.command';
 
-export * from './get-user-by-uuid.command';
+export * from './get-user-by-id.command';
 
 export * from './get-user-subscription-request-history.command';
 export * from './get-users-stream.command';

@@ -50,7 +50,7 @@ export class ConnectionsController {
     async connectionsByUser(
         @Param() param: ConnectionsByUserBodyParamDto,
     ): Promise<ConnectionsByUserResponseDto> {
-        const result = await this.connectionsService.connectionsByUser(param.uuid);
+        const result = await this.connectionsService.connectionsByUser(param.userId);
 
         const data = errorHandler(result);
         return {

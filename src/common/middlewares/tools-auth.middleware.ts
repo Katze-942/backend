@@ -34,7 +34,9 @@ export function toolsAuthMiddleware(appSecret: string) {
                     maxAge: BACKEND_TOOLS_JWT_LIFETIME_HOURS * 3_600_000,
                 });
 
-                logger.warn(`Tools access granted. Request: ${req.originalUrl}. IP: ${req.ip}`);
+                logger.warn(
+                    `Tools access granted. Request: ${req.originalUrl}. IP: ${'clientIp' in req ? req.clientIp : 'unknown'}`,
+                );
 
                 const redirectUrl = new URL(req.originalUrl, 'http://localhost');
                 redirectUrl.searchParams.delete('ott');

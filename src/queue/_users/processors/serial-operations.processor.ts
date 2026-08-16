@@ -96,8 +96,6 @@ export class SerialUsersOperationsQueueProcessor extends WorkerHost {
                     );
 
                     skipTelegramNotification = true;
-                } else {
-                    skipTelegramNotification = false;
                 }
 
                 await this.usersQueuesService.fireUserEventBulk({

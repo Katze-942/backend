@@ -10,20 +10,15 @@ export namespace UpdateUserCommand {
     export const endpointDetails = getEndpointDetails(
         USERS_ROUTES.UPDATE,
         'patch',
-        'Update a user by UUID or username',
+        'Update a user',
         { scope: 'update', kind: 'write' },
+        'Update a user by ID or username. Exactly one of the fields must be provided.',
     );
 
     export const RequestBodySchema = z
         .object({
             username: z.optional(z.string().describe('Username of the user')),
-            uuid: z.optional(
-                z
-                    .uuid()
-                    .describe(
-                        'UUID of the user. UUID has higher priority than username, so if both are provided, username will be ignored.',
-                    ),
-            ),
+            id: z.optional(z.number().describe('ID of the user')),
             status: z.enum([USERS_STATUS.ACTIVE, USERS_STATUS.DISABLED]).optional(),
             trafficLimitBytes: z
                 .number()
@@ -61,8 +56,8 @@ export namespace UpdateUserCommand {
                 .optional(z.nullable(z.uuid()))
                 .describe('Optional. External squad UUID.'),
         })
-        .refine((data) => data.uuid || data.username, {
-            error: 'Either uuid or username must be provided',
+        .refine((d) => d.username ?? d.id, {
+            error: 'At least one of username, id must be provided',
         });
 
     export const ResponseSchema = UserResponseSchema;

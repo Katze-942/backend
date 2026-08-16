@@ -10,12 +10,12 @@ export namespace BulkUpdateUsersSquadsCommand {
     export const endpointDetails = getEndpointDetails(
         USERS_ROUTES.BULK.UPDATE_SQUADS,
         'post',
-        'Bulk update users internal squads by UUIDs',
+        'Bulk update users internal squads by User IDs',
         { scope: 'bulk-update-squads', kind: 'write' },
     );
 
     export const RequestBodySchema = z.object({
-        uuids: z.array(z.uuid()).min(1).max(500),
+        userIds: z.array(z.number()).min(1).max(500),
         activeInternalSquads: z.array(z.uuid()),
     });
 

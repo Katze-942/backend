@@ -22,6 +22,9 @@ import {
     RemnawaveBadRequestErrorDto,
     RemnawaveInternalServerErrorDto,
     RemnawaveValidationErrorDto,
+    RemnawaveUserUsageStreamMessageDto,
+    RemnawaveSubscriptionRequestStreamMessageDto,
+    RemnawaveNodeConnectionsStreamMessageDto,
 } from './extra-models';
 
 const description = `
@@ -116,6 +119,9 @@ export async function getDocs(app: INestApplication<unknown>) {
                 RemnawaveBadRequestErrorDto,
                 RemnawaveInternalServerErrorDto,
                 RemnawaveValidationErrorDto,
+                RemnawaveUserUsageStreamMessageDto,
+                RemnawaveSubscriptionRequestStreamMessageDto,
+                RemnawaveNodeConnectionsStreamMessageDto,
             ],
         });
 

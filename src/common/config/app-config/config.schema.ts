@@ -34,12 +34,7 @@ export const configSchema = z
             .transform((port) => parseInt(port, 10)),
         APP_SECRET: z
             .string()
-            .optional()
             .refine((val) => val !== 'change_me', 'APP_SECRET cannot be set to "change_me"'),
-        JWT_AUTH_SECRET: z
-            .string()
-            .optional()
-            .refine((val) => val !== 'change_me', 'JWT_AUTH_SECRET cannot be set to "change_me"'),
         JWT_AUTH_LIFETIME: z
             .string()
             .default('12')
@@ -78,6 +73,7 @@ export const configSchema = z
                 'Port must be between 1 and 65535',
             ),
         REDIS_SOCKET: z.string().optional(),
+        REDIS_USERNAME: z.optional(z.string()),
         REDIS_PASSWORD: z.optional(z.string()),
         REDIS_DB: z
             .string()
@@ -86,7 +82,7 @@ export const configSchema = z
             .prefault('1'),
         SHORT_UUID_LENGTH: z
             .string()
-            .default('64')
+            .default('16')
             .transform((val) => parseInt(val, 10))
             .refine((val) => val >= 16 && val <= 64, 'SHORT_UUID_LENGTH must be between 16 and 64'),
         IS_HTTP_LOGGING_ENABLED: booleanString('false'),
@@ -95,6 +91,15 @@ export const configSchema = z
         SERVICE_CLEAN_USAGE_HISTORY: booleanString('false'),
         SERVICE_DISABLE_USER_USAGE_RECORDS: booleanString('false'),
         SERVICE_DISABLE_SRH_RECORDS: booleanString('false'),
+        EXPORT_TO_STREAM_ENABLED: booleanString('false'),
+        EXPORT_TO_STREAM_MAXLEN: z
+            .string()
+            .default('3000')
+            .transform((val) => parseInt(val, 10))
+            .refine(
+                (val) => Number.isInteger(val) && val > 0,
+                'EXPORT_TO_STREAM_MAXLEN must be a positive integer',
+            ),
         BANDWIDTH_USAGE_NOTIFICATIONS_ENABLED: booleanString('false'),
         BANDWIDTH_USAGE_NOTIFICATIONS_THRESHOLD: z
             .string()
@@ -146,15 +151,6 @@ export const configSchema = z
             .pipe(z.array(z.number()).optional()),
     })
     .superRefine((data, ctx) => {
-        if (!data.APP_SECRET && !data.JWT_AUTH_SECRET) {
-            ctx.issues.push({
-                input: data,
-                code: 'custom',
-                message: 'APP_SECRET is required.',
-                path: ['APP_SECRET'],
-            });
-        }
-
         if (!data.REDIS_SOCKET && (!data.REDIS_HOST || !data.REDIS_PORT)) {
             ctx.issues.push({
                 input: data,
@@ -335,13 +331,13 @@ export const configSchema = z
 
                 if (
                     data.NOT_CONNECTED_USERS_NOTIFICATIONS_AFTER_HOURS.some(
-                        (t) => isNaN(t) || !Number.isInteger(t) || t < 1 || t > 168,
+                        (t) => isNaN(t) || !Number.isInteger(t) || t < 1 || t > 744,
                     )
                 ) {
                     ctx.issues.push({
                         input: data,
                         code: 'custom',
-                        message: 'All hours values must be integers between 1 and 168',
+                        message: 'All hours values must be integers between 1 and 744',
                         path: ['NOT_CONNECTED_USERS_NOTIFICATIONS_AFTER_HOURS'],
                     });
                 }
@@ -380,14 +376,14 @@ export const configSchema = z
             } else {
                 if (
                     data.EXPIRATION_NOTIFICATIONS.some(
-                        (t) => isNaN(t) || !Number.isInteger(t) || t === 0 || t < -168 || t > 168,
+                        (t) => isNaN(t) || !Number.isInteger(t) || t === 0 || t < -744 || t > 744,
                     )
                 ) {
                     ctx.issues.push({
                         input: data,
                         code: 'custom',
                         message:
-                            'All expiration values must be non-zero integers between -168 and 168',
+                            'All expiration values must be non-zero integers between -744 and 744',
                         path: ['EXPIRATION_NOTIFICATIONS'],
                     });
                 }
@@ -457,23 +453,6 @@ export const configSchema = z
                 path: ['REMNAWAVE_BRANCH'],
             });
         }
-    })
-    .transform((data) => {
-        if (!data.APP_SECRET && data.JWT_AUTH_SECRET) {
-            // oxlint-disable-next-line
-            console.warn(
-                '[DEPRECATION] The "JWT_AUTH_SECRET" environment variable is deprecated and ' +
-                    'will be removed in the next minor release. Rename it to "APP_SECRET" in your ' +
-                    '.env file – the value stays exactly the same, only the key changes.',
-            );
-        }
-
-        const appSecret = (data.APP_SECRET ?? data.JWT_AUTH_SECRET)!;
-
-        return {
-            ...data,
-            APP_SECRET: appSecret,
-        };
     });
 
 export type ConfigSchema = z.infer<typeof configSchema>;

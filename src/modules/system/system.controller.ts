@@ -30,7 +30,10 @@ import {
     GetRecapCommand,
     GetRemnawaveHealthCommand,
     GetStatsCommand,
+    GetStatsDigestCommand,
+    GetHttpStatsCommand,
     TestSrrMatcherCommand,
+    GetConfigurationCommand,
 } from '@libs/contracts/commands';
 import { ROLE } from '@libs/contracts/constants';
 
@@ -46,7 +49,12 @@ import {
     DebugSrrMatcherResponseDto,
     GetMetadataResponseDto,
     GetRecapResponseDto,
+    GetHttpStatsResponseDto,
+    GetStatsDigestQueryDto,
+    GetStatsDigestResponseDto,
+    GetConfigurationResponseDto,
 } from './dtos';
+import { RouteCounterService } from './route-counter.service';
 import { SystemService } from './system.service';
 
 @ApiBearerAuth('Authorization')
@@ -57,7 +65,10 @@ import { SystemService } from './system.service';
 @UseFilters(HttpExceptionFilter)
 @Controller(SYSTEM_CONTROLLER)
 export class SystemController {
-    constructor(private readonly systemService: SystemService) {}
+    constructor(
+        private readonly systemService: SystemService,
+        private readonly routeCounterService: RouteCounterService,
+    ) {}
 
     @Endpoint({
         command: GetMetadataCommand,
@@ -66,6 +77,20 @@ export class SystemController {
     })
     async getMetadata(): Promise<GetMetadataResponseDto> {
         const result = await this.systemService.getMetadata();
+
+        const data = errorHandler(result);
+        return {
+            response: data,
+        };
+    }
+
+    @Endpoint({
+        command: GetConfigurationCommand,
+        httpCode: HttpStatus.OK,
+        type: GetConfigurationResponseDto,
+    })
+    async getConfiguration(): Promise<GetConfigurationResponseDto> {
+        const result = await this.systemService.getConfiguration();
 
         const data = errorHandler(result);
         return {
@@ -179,6 +204,36 @@ export class SystemController {
     })
     async getRecap(): Promise<GetRecapResponseDto> {
         const result = await this.systemService.getRecap();
+
+        const data = errorHandler(result);
+        return {
+            response: data,
+        };
+    }
+
+    @Endpoint({
+        command: GetStatsDigestCommand,
+        httpCode: HttpStatus.OK,
+        type: GetStatsDigestResponseDto,
+    })
+    async getStatsDigest(
+        @Query() query: GetStatsDigestQueryDto,
+    ): Promise<GetStatsDigestResponseDto> {
+        const result = await this.systemService.getStatsDigest(query);
+
+        const data = errorHandler(result);
+        return {
+            response: data,
+        };
+    }
+
+    @Endpoint({
+        command: GetHttpStatsCommand,
+        httpCode: HttpStatus.OK,
+        type: GetHttpStatsResponseDto,
+    })
+    async getHttpStats(): Promise<GetHttpStatsResponseDto> {
+        const result = await this.routeCounterService.getStats();
 
         const data = errorHandler(result);
         return {

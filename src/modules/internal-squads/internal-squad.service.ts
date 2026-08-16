@@ -1,17 +1,31 @@
 import { Transactional } from '@nestjs-cls/transactional';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import dayjs from 'dayjs';
 
 import { Injectable, Logger } from '@nestjs/common';
+import { EventBus, QueryBus } from '@nestjs/cqrs';
 
 import { fail, ok, TResult } from '@common/types';
+import { getDateRangeArrayUtil } from '@common/utils/get-date-range-array.util';
 import { ERRORS } from '@libs/contracts/constants/errors';
+
+import { AddUsersToNodeEvent } from '@modules/nodes/events/add-users-to-node';
+import { ValidateUserIdsQuery } from '@modules/users/queries/validate-user-ids';
 
 import { NodesQueuesService } from '@queue/_nodes';
 import { SquadsQueueService } from '@queue/_squads';
 
-import { ReorderInternalSquadsBodyDto } from './dtos';
+import {
+    GetInternalSquadUsageQueryDto,
+    GetInternalSquadUserUsageQueryDto,
+    ReorderInternalSquadsBodyDto,
+} from './dtos';
 import { InternalSquadEntity } from './entities/internal-squad.entity';
-import { GetInternalSquadAccessibleNodesResponseModel } from './models';
+import {
+    GetInternalSquadAccessibleNodesResponseModel,
+    GetInternalSquadUsageResponseModel,
+    GetInternalSquadUserUsageResponseModel,
+} from './models';
 import { GetInternalSquadByUuidResponseModel } from './models/get-internal-squad-by-uuid.response.model';
 import { GetInternalSquadsResponseModel } from './models/get-internal-squads.response.model';
 import { InternalSquadRepository } from './repositories/internal-squad.repository';
@@ -24,6 +38,8 @@ export class InternalSquadService {
         private readonly internalSquadRepository: InternalSquadRepository,
         private readonly nodesQueuesService: NodesQueuesService,
         private readonly squadsQueueService: SquadsQueueService,
+        private readonly eventBus: EventBus,
+        private readonly queryBus: QueryBus,
     ) {}
 
     public async getInternalSquads(): Promise<TResult<GetInternalSquadsResponseModel>> {
@@ -301,6 +317,69 @@ export class InternalSquadService {
         }
     }
 
+    public async getSquadUsage(
+        squadUuid: string,
+        query: GetInternalSquadUsageQueryDto,
+    ): Promise<TResult<GetInternalSquadUsageResponseModel>> {
+        try {
+            const { start, end, minTotalBytes, limit, cursor } = query;
+            const internalSquad = await this.internalSquadRepository.findByUUID(squadUuid);
+
+            if (!internalSquad) {
+                return fail(ERRORS.INTERNAL_SQUAD_NOT_FOUND);
+            }
+
+            const startDate = dayjs.utc(start).startOf('day').toDate();
+            const endDate = dayjs.utc(end).endOf('day').toDate();
+
+            const result = await this.internalSquadRepository.getSquadUsage({
+                squadUuid,
+                start: startDate,
+                end: endDate,
+                minTotalBytes,
+                limit,
+                cursor,
+            });
+
+            return ok(new GetInternalSquadUsageResponseModel({ squadUuid, ...result }));
+        } catch (error) {
+            this.logger.error(error);
+            return fail(ERRORS.GET_INTERNAL_SQUAD_USAGE_ERROR);
+        }
+    }
+
+    public async getSquadUserUsage(
+        squadUuid: string,
+        userId: number,
+        query: GetInternalSquadUserUsageQueryDto,
+    ): Promise<TResult<GetInternalSquadUserUsageResponseModel>> {
+        try {
+            const squad = await this.internalSquadRepository.findByUUID(squadUuid);
+
+            if (!squad) {
+                return fail(ERRORS.INTERNAL_SQUAD_NOT_FOUND);
+            }
+
+            const { startDate, endDate, dates } = getDateRangeArrayUtil(
+                new Date(query.start),
+                new Date(query.end),
+            );
+
+            const days = await this.internalSquadRepository.getUserSquadDailyUsage({
+                squadUuid,
+                userId: BigInt(userId),
+                start: startDate,
+                end: endDate,
+                dates,
+            });
+
+            return ok(new GetInternalSquadUserUsageResponseModel({ days }));
+        } catch (error) {
+            this.logger.error(error);
+            return fail(ERRORS.GET_INTERNAL_SQUAD_USAGE_ERROR);
+        }
+    }
+
     public async reorderInternalSquads(
         dto: ReorderInternalSquadsBodyDto,
     ): Promise<TResult<GetInternalSquadsResponseModel>> {
@@ -311,6 +390,58 @@ export class InternalSquadService {
         } catch (error) {
             this.logger.error(error);
             return fail(ERRORS.GENERIC_REORDER_ERROR);
+        }
+    }
+
+    public async addManyUsersToInternalSquad(
+        squadUuid: string,
+        usersIds: number[],
+    ): Promise<TResult<boolean>> {
+        try {
+            const validatedUsersIds = await this.queryBus.execute(
+                new ValidateUserIdsQuery(usersIds),
+            );
+            if (!validatedUsersIds.isOk) {
+                return fail(ERRORS.ADD_MANY_USERS_TO_INTERNAL_SQUAD_ERROR);
+            }
+
+            await this.internalSquadRepository.addManyUsersToInternalSquad(
+                squadUuid,
+                validatedUsersIds.response,
+            );
+
+            await this.eventBus.publish(new AddUsersToNodeEvent(validatedUsersIds.response));
+
+            return ok(true);
+        } catch (error) {
+            this.logger.error(error);
+            return fail(ERRORS.ADD_MANY_USERS_TO_INTERNAL_SQUAD_ERROR);
+        }
+    }
+
+    public async removeManyUsersFromInternalSquad(
+        squadUuid: string,
+        usersIds: number[],
+    ): Promise<TResult<boolean>> {
+        try {
+            const validatedUsersIds = await this.queryBus.execute(
+                new ValidateUserIdsQuery(usersIds),
+            );
+            if (!validatedUsersIds.isOk) {
+                return fail(ERRORS.REMOVE_MANY_USERS_FROM_INTERNAL_SQUAD_ERROR);
+            }
+
+            await this.internalSquadRepository.removeManyUsersFromInternalSquad(
+                squadUuid,
+                validatedUsersIds.response,
+            );
+
+            await this.eventBus.publish(new AddUsersToNodeEvent(validatedUsersIds.response));
+
+            return ok(true);
+        } catch (error) {
+            this.logger.error(error);
+            return fail(ERRORS.REMOVE_MANY_USERS_FROM_INTERNAL_SQUAD_ERROR);
         }
     }
 }

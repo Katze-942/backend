@@ -59,11 +59,6 @@ export interface IResolveProxyConfigOptions {
     excludeHostsByTags?: ISRRContext['excludeHostsByTags'];
 }
 
-type RemnawaveKcpConfig = {
-    clientMtu?: number;
-    clientTti?: number;
-} & Omit<KCPConfig, 'clientMtu'>;
-
 @Injectable()
 export class ResolveProxyConfigService {
     private readonly nanoid: ReturnType<typeof customAlphabet>;
@@ -339,7 +334,7 @@ export class ResolveProxyConfigService {
         };
     }
 
-    private resolveKcp(settings: RemnawaveKcpConfig | undefined): KcpTransport {
+    private resolveKcp(settings: KCPConfig | undefined): KcpTransport {
         return {
             transport: 'kcp',
             transportOptions: {
@@ -420,8 +415,10 @@ export class ResolveProxyConfigService {
                         ),
                         echConfigList: tls?.echConfigList || null,
                         echForceQuery: tls?.echForceQuery || null,
+                        echSockopt: toNonEmptyRecord(tls?.echSockopt),
                         pinnedPeerCertSha256: inputHost.pinnedPeerCertSha256,
                         verifyPeerCertByName: inputHost.verifyPeerCertByName,
+                        cipherSuites: tls?.cipherSuites || null,
                     },
                 };
             }
@@ -673,9 +670,12 @@ export class ResolveProxyConfigService {
         user: UserEntity,
         settings: SubscriptionSettingsEntity,
     ): string[] {
-        return remarks.map((remark) =>
-            TemplateEngine.formatWithUser(remark, user, settings, this.subPublicDomain),
+        const userValueMap = TemplateEngine.createUserValueMap(
+            user,
+            settings,
+            this.subPublicDomain,
         );
+        return remarks.map((remark) => TemplateEngine.replace(remark, userValueMap));
     }
 
     private parseResolvedProxyConfigFromRemark(remark: string): ResolvedProxyConfig | null {

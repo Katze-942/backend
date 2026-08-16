@@ -105,7 +105,7 @@ export class HwidUserDevicesController {
     ): Promise<DeleteUserHwidDeviceResponseDto> {
         const result = await this.hwidUserDevicesService.deleteUserHwidDevice(
             body.hwid,
-            body.userUuid,
+            body.userId,
         );
 
         const data = errorHandler(result);
@@ -125,7 +125,7 @@ export class HwidUserDevicesController {
     async deleteAllUserHwidDevices(
         @Body() body: DeleteAllUserHwidDevicesBodyDto,
     ): Promise<DeleteAllUserHwidDevicesResponseDto> {
-        const result = await this.hwidUserDevicesService.deleteAllUserHwidDevices(body.userUuid);
+        const result = await this.hwidUserDevicesService.deleteAllUserHwidDevices(body.userId);
 
         const data = errorHandler(result);
         return {
@@ -178,7 +178,7 @@ export class HwidUserDevicesController {
     async getUserHwidDevices(
         @Param() params: GetUserHwidDevicesParamDto,
     ): Promise<GetUserHwidDevicesResponseDto> {
-        const result = await this.hwidUserDevicesService.getUserHwidDevices(params.userUuid);
+        const result = await this.hwidUserDevicesService.getUserHwidDevices(params.userId);
 
         const data = errorHandler(result);
         return {

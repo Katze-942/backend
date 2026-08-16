@@ -31,7 +31,7 @@ export namespace UpdateHostCommand {
                 configProfileInboundUuid: z.uuid(),
             })
             .optional(),
-        remark: z.string().min(1).optional(),
+        remark: z.string().min(1).max(100).optional(),
         address: z.string().optional(),
         port: z.int().optional(),
         path: z.string().nullish(),

@@ -17,10 +17,10 @@ export namespace DropConnectionsCommand {
     export const DropBySchema = z.discriminatedUnion('by', [
         z
             .object({
-                by: z.literal('userUuids'),
-                userUuids: z.array(z.uuid()).min(1),
+                by: z.literal('userIds'),
+                userIds: z.array(z.number()).min(1),
             })
-            .describe('Drop by user UUIDs'),
+            .describe('Drop by user IDs'),
         z
             .object({
                 by: z.literal('ipAddresses'),

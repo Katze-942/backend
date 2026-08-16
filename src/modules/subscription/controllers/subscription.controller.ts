@@ -15,7 +15,7 @@ import {
 } from '@libs/contracts/api';
 import { GetSubscriptionInfoByShortUuidCommand } from '@libs/contracts/commands';
 
-import { ISRRContext } from '@modules/subscription-response-rules/interfaces';
+import type { ISRRContext } from '@modules/subscription-response-rules/interfaces';
 import { ResponseRulesEncryptionService } from '@modules/subscription-response-rules/services/response-rules-encryption.service';
 
 import {

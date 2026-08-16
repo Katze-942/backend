@@ -28,7 +28,7 @@ export namespace ConnectionsByNodeResultCommand {
                     nodeUuid: z.uuid(),
                     users: z.array(
                         z.object({
-                            userId: z.string(),
+                            userId: z.number(),
                             ips: z.array(
                                 z.object({
                                     ip: z.string(),

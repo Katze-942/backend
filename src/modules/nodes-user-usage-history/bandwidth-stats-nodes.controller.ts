@@ -11,16 +11,16 @@ import { ScopesGuard } from '@common/guards/scopes';
 import { errorHandler } from '@common/helpers/error-handler.helper';
 import { BANDWIDTH_STATS_NODES_CONTROLLER, CONTROLLERS_INFO } from '@libs/contracts/api';
 import {
-    GetLegacyStatsNodeUserUsageCommand,
+    GetNodeUsageCommand,
     GetStatsNodesUsersUsageCommand,
     GetStatsNodeUsersUsageCommand,
 } from '@libs/contracts/commands';
 import { ROLE } from '@libs/contracts/constants';
 
 import {
-    GetLegacyStatsNodesUsersUsageParamDto,
-    GetLegacyStatsNodesUsersUsageQueryDto,
-    GetLegacyStatsNodesUsersUsageResponseDto,
+    GetNodeUsageBodyDto,
+    GetNodeUsageQueryDto,
+    GetNodeUsageResponseDto,
     GetStatsNodesUsersUsageBodyDto,
     GetStatsNodesUsersUsageQueryDto,
     GetStatsNodesUsersUsageResponseDto,
@@ -28,7 +28,6 @@ import {
     GetStatsNodeUsersUsageQueryDto,
     GetStatsNodeUsersUsageResponseDto,
 } from './dtos';
-import { GetLegacyStatsNodesUsersUsageResponseModel } from './models';
 import { NodesUserUsageHistoryService } from './nodes-user-usage-history.service';
 
 @ApiBearerAuth('Authorization')
@@ -42,23 +41,19 @@ export class BandwidthStatsNodesController {
     constructor(private readonly nodesUserUsageHistoryService: NodesUserUsageHistoryService) {}
 
     @Endpoint({
-        command: GetLegacyStatsNodeUserUsageCommand,
+        command: GetNodeUsageCommand,
         httpCode: HttpStatus.OK,
-        type: GetLegacyStatsNodesUsersUsageResponseDto,
+        type: GetNodeUsageResponseDto,
     })
-    async getNodeUserUsage(
-        @Query() query: GetLegacyStatsNodesUsersUsageQueryDto,
-        @Param() param: GetLegacyStatsNodesUsersUsageParamDto,
-    ): Promise<GetLegacyStatsNodesUsersUsageResponseDto> {
-        const result = await this.nodesUserUsageHistoryService.getLegacyStatsNodesUsersUsage(
-            param.uuid,
-            new Date(query.start),
-            new Date(query.end),
-        );
+    async getNodeUsage(
+        @Body() body: GetNodeUsageBodyDto,
+        @Query() query: GetNodeUsageQueryDto,
+    ): Promise<GetNodeUsageResponseDto> {
+        const result = await this.nodesUserUsageHistoryService.getNodeUsage(body, query);
 
         const data = errorHandler(result);
         return {
-            response: data.map((item) => new GetLegacyStatsNodesUsersUsageResponseModel(item)),
+            response: data,
         };
     }
 

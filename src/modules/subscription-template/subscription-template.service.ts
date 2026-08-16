@@ -1,10 +1,11 @@
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import yaml from 'yaml';
+import { load } from 'js-yaml';
 
 import { Injectable, Logger } from '@nestjs/common';
 
 import { RawCacheService } from '@common/raw-cache';
 import { fail, ok, TResult } from '@common/types';
+import { YAML_MERGE_SCHEMA } from '@common/utils';
 import { CACHE_KEYS, ERRORS, TSubscriptionTemplateType } from '@libs/contracts/constants';
 import { RemnawaveInjectorSchema } from '@libs/contracts/models';
 
@@ -301,6 +302,7 @@ export class SubscriptionTemplateService {
     ): Promise<object> {
         const cached = await this.rawCacheService.get<object>(
             CACHE_KEYS.SUBSCRIPTION_TEMPLATE(name, type),
+            true,
         );
 
         if (cached) {
@@ -320,12 +322,16 @@ export class SubscriptionTemplateService {
 
             throw new Error('Template not found');
         }
-        let templateContent: object | null = null;
+        let templateContent: unknown | object | null = null;
         switch (template.templateType) {
             case 'MIHOMO':
             case 'STASH':
             case 'CLASH':
-                templateContent = yaml.parse(template.templateYaml!, { maxAliasCount: -1 });
+                templateContent = load(template.templateYaml!, {
+                    schema: YAML_MERGE_SCHEMA,
+                    maxAliases: -1,
+                    maxTotalMergeKeys: -1,
+                });
                 break;
             case 'SINGBOX':
             case 'XRAY_JSON':

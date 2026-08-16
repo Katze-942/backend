@@ -30,8 +30,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
                 ...model,
                 subscriptionSettings: wrapDbNull(model.subscriptionSettings),
                 hostOverrides: wrapDbNull(model.hostOverrides),
-                responseHeaders: wrapDbNull(model.responseHeaders),
-
+                responseHeadersAdd: model.responseHeadersAdd,
+                responseHeadersRemove: model.responseHeadersRemove,
                 hwidSettings: wrapDbNull(model.hwidSettings, true),
                 customRemarks: wrapDbNull(model.customRemarks, true),
             },
@@ -62,8 +62,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
                 ...data,
                 subscriptionSettings: wrapDbNull(data.subscriptionSettings),
                 hostOverrides: wrapDbNull(data.hostOverrides),
-                responseHeaders: wrapDbNull(data.responseHeaders),
-
+                responseHeadersAdd: data.responseHeadersAdd,
+                responseHeadersRemove: data.responseHeadersRemove,
                 hwidSettings: wrapDbNull(data.hwidSettings, true),
                 customRemarks: wrapDbNull(data.customRemarks, true),
             },
@@ -79,7 +79,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
                 | 'customRemarks'
                 | 'subscriptionSettings'
                 | 'hostOverrides'
-                | 'responseHeaders'
+                | 'responseHeadersAdd'
+                | 'responseHeadersRemove'
                 | 'hwidSettings'
             >
         >,
@@ -99,7 +100,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
                 | 'customRemarks'
                 | 'subscriptionSettings'
                 | 'hostOverrides'
-                | 'responseHeaders'
+                | 'responseHeadersAdd'
+                | 'responseHeadersRemove'
                 | 'hwidSettings'
             >
         >,
@@ -131,7 +133,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
                 'externalSquads.name',
                 'externalSquads.subscriptionSettings',
                 'externalSquads.hostOverrides',
-                'externalSquads.responseHeaders',
+                'externalSquads.responseHeadersAdd',
+                'externalSquads.responseHeadersRemove',
                 'externalSquads.hwidSettings',
                 'externalSquads.customRemarks',
                 'externalSquads.subpageConfigUuid',
@@ -167,7 +170,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
                 'externalSquads.name',
                 'externalSquads.subscriptionSettings',
                 'externalSquads.hostOverrides',
-                'externalSquads.responseHeaders',
+                'externalSquads.responseHeadersAdd',
+                'externalSquads.responseHeadersRemove',
                 'externalSquads.hwidSettings',
                 'externalSquads.customRemarks',
                 'externalSquads.subpageConfigUuid',
@@ -297,7 +301,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
         ExternalSquadEntity,
         | 'subscriptionSettings'
         | 'hostOverrides'
-        | 'responseHeaders'
+        | 'responseHeadersAdd'
+        | 'responseHeadersRemove'
         | 'hwidSettings'
         | 'customRemarks'
     > | null> {
@@ -306,7 +311,8 @@ export class ExternalSquadRepository implements ICrud<ExternalSquadEntity> {
             select: {
                 subscriptionSettings: true,
                 hostOverrides: true,
-                responseHeaders: true,
+                responseHeadersAdd: true,
+                responseHeadersRemove: true,
                 hwidSettings: true,
                 customRemarks: true,
             },

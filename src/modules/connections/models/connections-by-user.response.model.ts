@@ -18,8 +18,7 @@ export class ConnectionsByUserResultResponseModel {
     public readonly progress: IGetIpsListProgress;
     public readonly result: {
         success: boolean;
-        userUuid: string;
-        userId: string;
+        userId: number;
         nodes: IGetIpsListNodeResult[];
     } | null;
 

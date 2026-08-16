@@ -26,7 +26,7 @@ export namespace CreateHostCommand {
             configProfileUuid: z.uuid(),
             configProfileInboundUuid: z.uuid(),
         }),
-        remark: z.string().min(1),
+        remark: z.string().min(1).max(100),
 
         address: z.string(),
         port: z.int(),

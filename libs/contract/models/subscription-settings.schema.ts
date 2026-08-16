@@ -6,18 +6,10 @@ import { HwidSettingsSchema } from './subscription-settings/hwid-settings.schema
 
 export const SubscriptionSettingsSchema = z.object({
     uuid: z.uuid(),
-    profileTitle: z.string(),
-    supportLink: z.string(),
-    profileUpdateInterval: z.int().min(1),
-
-    isProfileWebpageUrlEnabled: z.boolean(),
     serveJsonAtBaseSubscription: z.boolean(),
 
     isShowCustomRemarks: z.boolean(),
     customRemarks: CustomRemarksSchema,
-
-    happAnnounce: z.string().nullable(),
-    happRouting: z.string().nullable(),
 
     customResponseHeaders: z.nullable(z.record(z.string(), z.string())),
 

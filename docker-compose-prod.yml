@@ -19,7 +19,7 @@ x-env: &env
 
 services:
   remnawave:
-    image: ghcr.io/katze-942/backend:main
+    image: ghcr.io/katze-942/backend:latest
     container_name: remnawave
     hostname: remnawave
     <<: [*common, *logging, *env]

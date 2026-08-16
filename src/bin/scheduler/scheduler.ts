@@ -15,13 +15,11 @@ import { createLogger } from 'winston';
 import * as winston from 'winston';
 
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 import { TypedConfigService } from '@common/config/app-config';
 import { NotFoundExceptionFilter } from '@common/exception/not-found-exception.filter';
 import { WorkerRoutesGuard } from '@common/guards/worker-routes/worker-routes.guard';
 import { customLogFilter } from '@common/utils/filter-logs/filter-logs';
-import { getRedisConnectionOptions } from '@common/utils/get-redis-connection-options';
 import { isDevOrDebugLogsEnabled } from '@common/utils/startup-app';
 import { BULLBOARD_ROOT, HEALTH_ROOT, METRICS_ROOT } from '@libs/contracts/api';
 
@@ -93,25 +91,13 @@ async function bootstrap(): Promise<void> {
         new WorkerRoutesGuard({ allowedPaths: [METRICS_ROOT, BULLBOARD_ROOT, HEALTH_ROOT] }),
     );
 
-    app.connectMicroservice<MicroserviceOptions>({
-        transport: Transport.REDIS,
-        options: {
-            ...getRedisConnectionOptions(
-                config.get('REDIS_SOCKET'),
-                config.get('REDIS_HOST'),
-                config.get('REDIS_PORT'),
-                'ioredis',
-            ),
-            db: config.getOrThrow('REDIS_DB'),
-            password: config.get('REDIS_PASSWORD'),
-            keyPrefix: 'nmicro:',
-        },
-    });
-
-    await app.startAllMicroservices();
-
     app.enableShutdownHooks();
 
     await app.listen(config.getOrThrow('METRICS_PORT'));
+
+    if (import.meta.webpackHot) {
+        import.meta.webpackHot.accept();
+        import.meta.webpackHot.dispose(() => app.close());
+    }
 }
 void bootstrap();

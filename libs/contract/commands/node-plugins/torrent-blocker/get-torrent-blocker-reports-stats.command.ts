@@ -24,7 +24,7 @@ export namespace GetTorrentBlockerReportsStatsCommand {
             }),
             topUsers: z.array(
                 z.object({
-                    uuid: z.uuid(),
+                    userId: z.number(),
                     color: z.string(),
                     username: z.string(),
                     total: z.number(),

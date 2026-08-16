@@ -1,3 +1,5 @@
+import type { ISRRContext } from '../interfaces';
+
 import { Request, Response, NextFunction } from 'express';
 
 import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
@@ -15,7 +17,6 @@ import {
 import { GetCachedSubscriptionSettingsQuery } from '@modules/subscription-settings/queries/get-cached-subscrtipion-settings';
 import { isExtendedClient } from '@modules/subscription-template/constants';
 
-import { ISRRContext } from '../interfaces';
 import { ResponseRulesMatcherService } from '../services/response-rules-matcher.service';
 
 @Injectable()
@@ -83,6 +84,7 @@ export class ResponseRulesMiddleware implements NestMiddleware {
                     result.matchedRule?.responseModifications?.additionalExtendedClientsRegex,
                 ),
                 matchedResponseType: result.responseType,
+                matchedRuleName: result.matchedRule?.name,
                 ip: req.clientIp,
                 subscriptionSettings: settingsEntity,
             };

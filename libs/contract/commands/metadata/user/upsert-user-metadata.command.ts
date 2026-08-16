@@ -5,17 +5,17 @@ import { getEndpointDetails } from '../../../constants';
 
 export namespace UpsertUserMetadataCommand {
     export const url = REST_API.METADATA.USER.UPSERT;
-    export const TSQ_url = url(':uuid');
+    export const TSQ_url = url(':userId');
 
     export const endpointDetails = getEndpointDetails(
-        METADATA_ROUTES.USER.UPSERT(':uuid'),
+        METADATA_ROUTES.USER.UPSERT(':userId'),
         'put',
         'Update or create User Metadata',
         { scope: 'upsert-user', kind: 'write' },
     );
 
     export const RequestParamsSchema = z.object({
-        uuid: z.uuid(),
+        userId: z.coerce.number(),
     });
 
     export const RequestBodySchema = z.object({

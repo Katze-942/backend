@@ -2,25 +2,26 @@ import { z } from 'zod';
 
 import { REST_API, USERS_ROUTES } from '../../api';
 import { getEndpointDetails } from '../../constants';
+import { numberParamSchema } from '../../models';
 
 export namespace GetUserAccessibleNodesCommand {
     export const url = REST_API.USERS.ACCESSIBLE_NODES;
-    export const TSQ_url = url(':uuid');
+    export const TSQ_url = url(':userId');
 
     export const endpointDetails = getEndpointDetails(
-        USERS_ROUTES.ACCESSIBLE_NODES(':uuid'),
+        USERS_ROUTES.ACCESSIBLE_NODES(':userId'),
         'get',
         'Get user accessible nodes',
         { scope: 'accessible-nodes', kind: 'read' },
     );
 
     export const RequestParamSchema = z.object({
-        uuid: z.uuid(),
+        userId: numberParamSchema,
     });
 
     export const ResponseSchema = z.object({
         response: z.object({
-            userUuid: z.uuid(),
+            userId: z.number(),
             activeNodes: z.array(
                 z.object({
                     uuid: z.uuid(),

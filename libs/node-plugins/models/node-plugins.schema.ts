@@ -2,10 +2,19 @@ import { z } from 'zod';
 
 const DOCS_LINK = `\n\n[📖 Documentation](https://docs.rw/docs/learn/node-plugins)`;
 
+// https://github.com/colinhacks/zod/issues/5944
+const IPV6 = z.regexes.ipv6.source.slice(1, -1);
+
+const ipv6 = () => z.string().regex(new RegExp(`^(${IPV6})$`), { error: 'Invalid IPv6 address' });
+const cidrv6 = () =>
+    z.string().regex(new RegExp(`^(${IPV6})\\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$`), {
+        error: 'Invalid IPv6 CIDR range',
+    });
+
 const IpCidrOrExtSchema = z
     .union([
-        z.union([z.cidrv4(), z.cidrv6()]),
-        z.union([z.ipv4(), z.ipv6()]),
+        z.union([z.cidrv4(), cidrv6()]),
+        z.union([z.ipv4(), ipv6()]),
         z.string().startsWith('ext:'),
     ])
     .meta({
@@ -17,7 +26,7 @@ export const SharedListSchema = z.discriminatedUnion('type', [
     z.object({
         name: z.string().startsWith('ext:'),
         type: z.literal('ipList'),
-        items: z.array(z.union([z.cidrv4(), z.cidrv6(), z.union([z.ipv4(), z.ipv6()])])),
+        items: z.array(z.union([z.cidrv4(), cidrv6(), z.union([z.ipv4(), ipv6()])])),
     }),
     z.object({
         name: z.string().startsWith('ext:'),
@@ -38,7 +47,7 @@ export const TorrentBlockerPluginSchema = z.object({
     ignoreLists: z
         .object({
             ip: z
-                .array(z.union([z.union([z.ipv4(), z.ipv6()]), z.string().startsWith('ext:')]))
+                .array(z.union([z.union([z.ipv4(), ipv6()]), z.string().startsWith('ext:')]))
                 .optional()
                 .meta({
                     title: 'IP',
@@ -60,6 +69,10 @@ export const TorrentBlockerPluginSchema = z.object({
         title: 'Include Rule Tags',
         markdownDescription: `By default, Torrent Blocker creates a dedicated rule and injects it as **routing.rules[0]**. Specify an array of **ruleTag** values here if you want to block IPs matched by other routing rules as well.${DOCS_LINK}`,
     }),
+    webhookUrl: z.optional(z.url()).meta({
+        title: 'Webhook URL',
+        markdownDescription: `Optional. Additional webhook URL to send to when a block is triggered.${DOCS_LINK}`,
+    }),
 });
 
 export const ConnectionDropPluginSchema = z.object({
@@ -68,7 +81,7 @@ export const ConnectionDropPluginSchema = z.object({
         markdownDescription: `Controls whether IP addresses from the **whitelistIps** object will be used.${DOCS_LINK}`,
     }),
     whitelistIps: z
-        .array(z.union([z.union([z.ipv4(), z.ipv6()]), z.string().startsWith('ext:')]))
+        .array(z.union([z.union([z.ipv4(), ipv6()]), z.string().startsWith('ext:')]))
         .meta({
             title: 'Whitelist IPs',
             markdownDescription: `List of IP addresses, for which the connection drop will not be applied, which is enabled by default for all IP addresses. \n\n You can use lists from **sharedLists** in the format: **ext:list_name**. Please note that this field only supports IP addresses ranges, not CIDR ranges.${DOCS_LINK}`,
@@ -107,6 +120,46 @@ export const EgressFilterPluginSchema = z.object({
         }),
 });
 
+const cleanupPathSchema = z
+    .string()
+    .trim()
+    .min(1, { message: 'Path must not be empty' })
+    .refine((v) => v.startsWith('/'), {
+        message: 'Path must be absolute (start with "/")',
+    })
+    .refine((v) => !v.includes('\0'), {
+        message: 'Path must not contain null bytes',
+    });
+
+export const preStartPluginSchema = z.object({
+    enabled: z
+        .boolean()
+        .default(false)
+        .meta({
+            title: 'Enabled',
+            markdownDescription: `Enables the pre-start stage. All enabled sections below run every time before the Xray-Core process starts — on node startup, on core restart, and after any configuration change that triggers a core reload. If a section fails, the failure is logged and the core still starts.${DOCS_LINK}`,
+        }),
+    cleanupSockets: z
+        .object({
+            enabled: z.boolean().meta({
+                title: 'Enable socket cleanup',
+                markdownDescription: `Removes stale unix socket files left behind by a previous core process that did not shut down cleanly. Such leftovers make Xray-Core fail to bind with \`address already in use\`. Only entries that are actually unix sockets are removed — regular files, directories and symlinks are always skipped.${DOCS_LINK}`,
+            }),
+            files: z
+                .array(cleanupPathSchema)
+                .max(64, { message: 'No more than 64 entries allowed' })
+                .meta({
+                    title: 'Files',
+                    markdownDescription: `Absolute paths to socket files. Glob patterns are supported (\`*\`, \`?\`, \`[…]\`), for example \`/dev/shm/*.sock\`. Paths that do not exist are skipped silently.${DOCS_LINK}`,
+                }),
+        })
+        .optional()
+        .meta({
+            title: 'Cleanup Sockets',
+            markdownDescription: `Stale unix socket removal before the core starts.${DOCS_LINK}`,
+        }),
+});
+
 export const NodePluginSchema = z.object({
     sharedLists: z
         .array(SharedListSchema)
@@ -131,6 +184,10 @@ export const NodePluginSchema = z.object({
     connectionDrop: ConnectionDropPluginSchema.optional().meta({
         title: 'Connection Drop',
         markdownDescription: `Connection Drop Plugin configuration. Optional.${DOCS_LINK}`,
+    }),
+    preStart: preStartPluginSchema.optional().meta({
+        title: 'Pre-Start',
+        markdownDescription: `Pre-Start Plugin configuration. Optional.${DOCS_LINK}`,
     }),
 });
 

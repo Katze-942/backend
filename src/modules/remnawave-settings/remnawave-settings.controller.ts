@@ -1,4 +1,4 @@
-import { CONTROLLERS_INFO, REMNAAWAVE_SETTINGS_CONTROLLER } from '@contract/api';
+import { CONTROLLERS_INFO, REMNAWAVE_SETTINGS_CONTROLLER } from '@contract/api';
 import { ROLE } from '@contract/constants';
 
 import { Body, Controller, HttpStatus, UseFilters, UseGuards } from '@nestjs/common';
@@ -28,7 +28,7 @@ import { RemnawaveSettingsService } from './remnawave-settings.service';
 @Roles(ROLE.ADMIN)
 @UseGuards(JwtDefaultGuard, RolesGuard)
 @UseFilters(HttpExceptionFilter)
-@Controller(REMNAAWAVE_SETTINGS_CONTROLLER)
+@Controller(REMNAWAVE_SETTINGS_CONTROLLER)
 export class RemnawaveSettingsController {
     constructor(private readonly remnawaveSettingsService: RemnawaveSettingsService) {}
 
