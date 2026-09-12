@@ -3,6 +3,8 @@ WORKDIR /opt/frontend
 
 ARG BRANCH=main
 ARG FRONTEND_URL=https://github.com/remnawave/frontend/releases/latest/download/remnawave-frontend.zip
+ARG SINGBOX_SCHEMA_URL=https://github.com/BlackDuty/sing-box-schema/releases/download/v1.13.13/schema.json
+ARG MIHOMO_SCHEMA_URL=https://github.com/dongchengjie/meta-json-schema/releases/download/v1.19.29/meta-json-schema.json
 
 RUN apk add --no-cache curl unzip ca-certificates \
     && curl -L ${FRONTEND_URL} -o frontend.zip \
@@ -10,12 +12,15 @@ RUN apk add --no-cache curl unzip ca-certificates \
     && curl -L https://validator.remna.dev/wasm_exec.js -o frontend_temp/dist/assets/wasm_exec.js \
     && curl -L https://validator.remna.dev/xray.schema.json -o frontend_temp/dist/assets/xray.schema.json \
     && curl -L https://validator.remna.dev/xray.schema.cn.json -o frontend_temp/dist/assets/xray.schema.cn.json \
+    && curl -L ${SINGBOX_SCHEMA_URL} -o frontend_temp/dist/assets/singbox.schema.json \
+    && curl -L ${MIHOMO_SCHEMA_URL} -o frontend_temp/dist/assets/mihomo.schema.json \
     && curl -L https://validator.remna.dev/main.wasm -o frontend_temp/dist/assets/main.wasm
 
-FROM node:24.19-trixie-slim AS backend-build
+FROM node:24.20-trixie-slim AS backend-build
 WORKDIR /opt/app
 
 COPY package*.json ./
+COPY patches ./patches
 COPY prisma ./prisma
 COPY rspack.config.mjs ./
 COPY prisma.config.ts ./prisma.config.ts
@@ -28,6 +33,8 @@ COPY src ./src
 COPY libs ./libs
 
 RUN npm run migrate:generate \
+    && npm run generate:openapi \
+    && test -s openapi.json \
     && npm run build \
     && npm prune --omit=dev \
     && npm cache clean --force
@@ -46,7 +53,7 @@ RUN cd node_modules/@prisma/client/runtime && \
     find node_modules \( -name '*.js.map' -o -name '*.mjs.map' \) -delete && \
     find node_modules \( -name '*.d.ts' -o -name '*.d.cts' -o -name '*.d.mts' \) -delete
 
-FROM node:24.19-trixie-slim
+FROM node:24.20-trixie-slim
 
 LABEL org.opencontainers.image.title="Remnawave"
 LABEL org.opencontainers.image.description="Powerful proxy management tool"
@@ -81,6 +88,7 @@ ENV __RW_METADATA_BUILD_TIME=${__RW_METADATA_BUILD_TIME}
 ENV __RW_METADATA_BUILD_NUMBER=${__RW_METADATA_BUILD_NUMBER}
 
 COPY --from=backend-build /opt/app/dist ./dist
+COPY --from=backend-build /opt/app/openapi.json ./openapi.json
 COPY --from=frontend /opt/frontend/frontend_temp/dist ./frontend
 COPY --from=backend-build /opt/app/prisma/generated ./prisma/generated
 COPY --from=backend-build /opt/app/prisma/migrations ./prisma/migrations

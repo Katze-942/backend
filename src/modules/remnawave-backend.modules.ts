@@ -8,6 +8,7 @@ import { ApiTokensModule } from './api-tokens/api-tokens.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigProfileModule } from './config-profiles/config-profile.module';
 import { ConnectionsModule } from './connections/connections.module';
+import { NodeSshModule } from './node-ssh/node-ssh.module';
 import { ExternalSquadModule } from './external-squads/external-squads.module';
 import { HostsModule } from './hosts/hosts.module';
 import { HwidUserDevicesModule } from './hwid-user-devices/hwid-user-devices.module';
@@ -15,6 +16,7 @@ import { InfraBillingModule } from './infra-billing/infra-billing.module';
 import { InternalSquadModule } from './internal-squads/internal-squad.module';
 import { KeygenModule } from './keygen/keygen.module';
 import { MetadataModule } from './metadata/metadata.module';
+import { NodeIntegrationModule } from './node-integrations';
 import { NodePluginModule } from './node-plugins';
 import { NodesUsageHistoryModule } from './nodes-usage-history/nodes-usage-history.module';
 import { NodesUserUsageHistoryModule } from './nodes-user-usage-history/nodes-user-usage-history.module';
@@ -46,6 +48,7 @@ import { UsersModule } from './users/users.module';
         KeygenModule,
         NodesModule,
         NodePluginModule,
+        NodeIntegrationModule,
         HostsModule,
         NodesUserUsageHistoryModule,
         HwidUserDevicesModule,
@@ -57,6 +60,7 @@ import { UsersModule } from './users/users.module';
         ConditionalModule.registerWhen(SubscriptionSettingsModule, () => isRestApi()),
         ConditionalModule.registerWhen(RemnawaveServiceModule, () => isScheduler()),
         ConditionalModule.registerWhen(ConnectionsModule, () => isRestApi()),
+        ConditionalModule.registerWhen(NodeSshModule, () => isRestApi()),
         ConditionalModule.registerWhen(MetadataModule, () => isRestApi()),
     ],
 })
