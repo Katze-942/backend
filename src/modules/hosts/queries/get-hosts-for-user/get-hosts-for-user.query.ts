@@ -9,6 +9,7 @@ export class GetHostsForUserQuery extends Query<TResult<HostWithRawInbound[]>> {
         public readonly userId: bigint,
         public readonly returnDisabledHosts: boolean,
         public readonly returnHiddenHosts: boolean,
+        public readonly ignoreHostInternalSquadRestrictions: boolean = false,
     ) {
         super();
     }

@@ -170,6 +170,7 @@ export class HostsRepository implements ICrud<HostsEntity> {
         userId: bigint,
         returnDisabledHosts: boolean = false,
         returnHiddenHosts: boolean = false,
+        ignoreHostInternalSquadRestrictions: boolean = false,
     ) {
         return await this.qb.kysely
             .selectFrom('hosts')
@@ -189,28 +190,30 @@ export class HostsRepository implements ICrud<HostsEntity> {
                             'hosts.configProfileInboundUuid',
                         )
                         .where('internalSquadMembers.userId', '=', userId)
-                        .where((eb2) =>
-                            eb2(
-                                eb2.exists(
-                                    eb2
-                                        .selectFrom('internalSquadHostLinks')
-                                        .whereRef(
-                                            'internalSquadHostLinks.hostUuid',
-                                            '=',
-                                            'hosts.uuid',
-                                        )
-                                        .whereRef(
-                                            'internalSquadHostLinks.squadUuid',
-                                            '=',
-                                            'internalSquadInbounds.internalSquadUuid',
-                                        )
-                                        .select(eb2.val(1).as('one')),
-                                ),
-                                '=',
-                                eb2.parens(
-                                    'hosts.internalSquadsMode',
+                        .$if(!ignoreHostInternalSquadRestrictions, (qb) =>
+                            qb.where((eb2) =>
+                                eb2(
+                                    eb2.exists(
+                                        eb2
+                                            .selectFrom('internalSquadHostLinks')
+                                            .whereRef(
+                                                'internalSquadHostLinks.hostUuid',
+                                                '=',
+                                                'hosts.uuid',
+                                            )
+                                            .whereRef(
+                                                'internalSquadHostLinks.squadUuid',
+                                                '=',
+                                                'internalSquadInbounds.internalSquadUuid',
+                                            )
+                                            .select(eb2.val(1).as('one')),
+                                    ),
                                     '=',
-                                    INTERNAL_SQUADS_MODE.ALLOW_ONLY,
+                                    eb2.parens(
+                                        'hosts.internalSquadsMode',
+                                        '=',
+                                        INTERNAL_SQUADS_MODE.ALLOW_ONLY,
+                                    ),
                                 ),
                             ),
                         )

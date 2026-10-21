@@ -15,6 +15,7 @@
   },
   "type": "commonjs",
   "scripts": {
+    "test:host-squad-visibility": "node --test tests/host-squad-visibility.test.cjs",
     "test:mihomo-providers": "tsc -p tsconfig.mihomo-tests.json && node --test .wip/mihomo-provider-tests/tests/mihomo-provider-bindings.test.js",
     "postinstall": "patch-package",
     "dev": "cross-env NODE_ENV=development INSTANCE_TYPE=api rspack --watch --mode development",

@@ -24,6 +24,7 @@ export class GetHostsForUserHandler implements IQueryHandler<GetHostsForUserQuer
                 query.userId,
                 query.returnDisabledHosts,
                 query.returnHiddenHosts,
+                query.ignoreHostInternalSquadRestrictions,
             );
 
             const inboundUuids = new Set<string>();

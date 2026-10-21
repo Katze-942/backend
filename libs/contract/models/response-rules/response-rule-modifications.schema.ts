@@ -73,6 +73,11 @@ export const ResponseRuleModificationsSchema = z
             markdownDescription:
                 'If you set this flag to **true**, the **Serve JSON at Base Subscription** setting will be ignored (set to **false**).',
         }),
+        ignoreHostInternalSquadRestrictions: z.boolean().optional().meta({
+            title: 'Ignore Host Internal Squad Restrictions',
+            markdownDescription:
+                'Ignore the host visibility allow/deny lists for internal squads in this response rule. Users must still have access to the host inbound through an internal squad. Disabled hosts, subscription type exclusions and tag exclusions are still respected. Defaults to false.',
+        }),
         additionalExtendedClientsRegex: z
             .array(z.string().min(1))
             .optional()

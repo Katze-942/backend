@@ -262,6 +262,7 @@ export class SubscriptionService {
                     false,
                     srrContext.matchedResponseType === 'XRAY_JSON' ||
                         srrContext.matchedResponseType === 'MIHOMO',
+                    srrContext.ignoreHostInternalSquadRestrictions ?? false,
                 ),
             );
 

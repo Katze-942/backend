@@ -17,6 +17,7 @@ export interface ISRRContext {
     ignoreHostXrayJsonTemplate?: boolean;
     headersToApply?: Record<string, string>;
     ignoreServeJsonAtBaseSubscription?: boolean;
+    ignoreHostInternalSquadRestrictions?: boolean;
     disableHwidCheck?: boolean;
     encryption?: TResponseRuleEncryption;
     excludeHostsByTags?: Set<string>;
