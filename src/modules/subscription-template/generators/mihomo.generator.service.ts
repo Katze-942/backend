@@ -10,6 +10,7 @@ import { SubscriptionTemplateService } from '@modules/subscription-template/subs
 
 import { applyHostMapper } from '../host-mapper';
 import { ResolvedProxyConfig } from '../resolve-proxy/interfaces';
+import { finalizeMihomoProviderBindings } from './mihomo-provider-bindings';
 
 export interface MihomoData {
     proxies: ProxyNode[];
@@ -605,7 +606,7 @@ export class MihomoGeneratorService {
                 finalConfig['proxy-providers'] = providers;
             }
 
-            return dump(finalConfig);
+            return dump(finalizeMihomoProviderBindings(finalConfig, yamlConfig, data.proxies));
         } catch (error) {
             this.logger.error(`Error rendering yaml config: ${error}`);
             return '';

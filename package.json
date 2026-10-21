@@ -15,6 +15,7 @@
   },
   "type": "commonjs",
   "scripts": {
+    "test:mihomo-providers": "tsc -p tsconfig.mihomo-tests.json && node --test .wip/mihomo-provider-tests/tests/mihomo-provider-bindings.test.js",
     "postinstall": "patch-package",
     "dev": "cross-env NODE_ENV=development INSTANCE_TYPE=api rspack --watch --mode development",
     "dev:worker": "NODE_ENV=development INSTANCE_TYPE=processor rspack --watch --mode development",
